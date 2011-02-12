@@ -3,3 +3,6 @@
 #               about your product. Accepts arguments of machine serial numbers.
 # Edit:         This is a fork @glarizza's script:
 #               https://github.com/huronschools/scripts/blob/master/ruby/warranty.rb
+# Edit:   This is a fork of @chilcote's script:
+#     https://github.com/chilcote/warranty
+#     Adding functions to write details to plists
