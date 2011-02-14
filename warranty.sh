@@ -17,7 +17,7 @@
 ###############
 
 # make sure you use a full path
-PlistLocal="/Library/appwarranty.plist"
+PlistLocal="appwarranty.plist"
 WarrantyTempFile="/tmp/warranty.txt"
 AsdCheck="/tmp/asdcheck.txt"
 
@@ -85,7 +85,7 @@ fi
 ###################
 
 echo "$(date) ... Checking warranty status"
-InvalidSerial=`grep "serial number provided is invalid" "${WarrantyTempFile}"`
+InvalidSerial=`grep "wc.check.err.usr.pd04.invalidserialnumber" "${WarrantyTempFile}"`
 
 if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 	echo "Serial Number    ==  ${SerialNumber}"
@@ -110,8 +110,14 @@ if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 	echo "ASD              ==  ${AsdVers}"
 	SetPlistString asd "${AsdVers}" "${PlistLocal}"
 else
-	[[ -z "${SerialNumber}" ]] && echo "     No serial number was found."
-	[[ -n "${InvalidSerial}" ]] && echo "     Warranty information was not found for ${SerialNumber}."
+	if [[ -z "${SerialNumber}" ]]; then 
+		echo "     No serial number was found."
+		SetPlistString warrantystatus "Serial Not Found: ${SerialNumber}" "${PlistLocal}"
+	fi
+	if [[ -n "${InvalidSerial}" ]]; then
+		echo "     Warranty information was not found for ${SerialNumber}."
+		SetPlistString warrantystatus "Serial Invalid: ${SerialNumber}" "${PlistLocal}"
+	fi
 fi
 
 exit 0
