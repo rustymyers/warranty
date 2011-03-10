@@ -10,12 +10,12 @@
 #     Adding functions to write details to plists
 
 require 'open-uri'
+require 'date'
 require "osx/cocoa"
 require 'pp'
 
 myfile = 'appwarranty.plist'
 my_dict = OSX::NSMutableDictionary.dictionary
-
 
 def get_warranty(serial)
   hash = {}
@@ -28,9 +28,13 @@ def get_warranty(serial)
     
     puts "\nSerial Number:\t\t#{hash['SERIAL_ID']}\n"
     puts "Product Description:\t#{hash['PROD_DESCR']}\n"
-    puts "Purchase date:\t\t#{hash['PURCHASE_DATE'].gsub("-",".")}"
-    puts (!hash['COV_END_DATE'].empty?) ? "Coverage end:\t\t#{hash['COV_END_DATE'].gsub("-",".")}\n" : "Coverage end:\t\tEXPIRED\n"
-  
+    puts "Warranty Type:\t\t#{hash['HW_COVERAGE_DESC']}\n"
+    puts "Purchase date:\t\t#{hash['PURCHASE_DATE']}"
+    # puts (!hash['COV_END_DATE'].empty?) ? "Coverage end:\t\t#{hash['COV_END_DATE'].gsub("-",".")}\n" : "Coverage end:\t\tEXPIRED\n"
+    (!hash['COV_END_DATE'].empty?) ? coverage = "#{hash['COV_END_DATE']}\n" : coverage = "EXPIRED"
+    str = "#{hash['HW_END_DATE']}"
+    puts (!hash['HW_END_DATE']) ? "Coverage end:\t\t#{coverage}\n" : "Coverage end:\t\t#{Date.parse str}\n"
+
   }
   
 # Import the latest list of ASD versions and match the PROD_DESCR with the correct ASD

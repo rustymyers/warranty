@@ -12,6 +12,8 @@
 # Updated support url 
 # Added function to write data to plist
 
+## Add function to cycle through a csv file
+
 ###############
 ##  GLOBALS  ##
 ###############
