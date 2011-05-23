@@ -19,7 +19,7 @@ my_dict = OSX::NSMutableDictionary.dictionary
 
 def get_warranty(serial)
   hash = {}
-  open('https://selfsolve.apple.com/warrantyChecker.do?sn=' + serial.upcase + '&country=USA') {|item|
+  open('https://selfsolve.apple.com/GetWarranty.do?sn=' + serial.upcase + '&country=USA') {|item|
     item.each_line {|item|}
     warranty_array = item.strip.split('"')
     warranty_array.each {|array_item|
