@@ -7,13 +7,8 @@
 # University of Notre Dame
 # http://www.nd.edu/~srussel2/macintosh/bash/warranty.txt
 # Edited to add the ASD Versions by Joseph Chilcote
-# Last Modified: 09/16/2010
-# Edited 02/10/2011
-# Updated support url 
-# Added function to write data to plist
-
-## Add function to cycle through a csv file
-
+# Edited by Rusty Myers
+# Last Modified: 08/09/2011
 ###############
 ##  GLOBALS  ##
 ###############
@@ -87,7 +82,7 @@ fi
 ###################
 
 echo "$(date) ... Checking warranty status"
-InvalidSerial=`grep "wc.check.err.usr.pd04.invalidserialnumber" "${WarrantyTempFile}"`
+InvalidSerial=`grep 'wc.check.err.usr.pd04.invalidserialnumber\|wc.check.err.usr.pd11.productdoesnotexist' "${WarrantyTempFile}"`
 
 if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 	echo "Serial Number    ==  ${SerialNumber}"
@@ -95,22 +90,27 @@ if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 	PurchaseDate=`GetWarrantyValue PURCHASE_DATE`
 	echo "PurchaseDate     ==  ${PurchaseDate}"
 	SetPlistString purchasedate "${PurchaseDate}" "${PlistLocal}"
-
+	
 	WarrantyExpires=`GetWarrantyValue HW_END_DATE`
 	echo "WarrantyExpires  ==  ${WarrantyExpires}"
 	SetPlistString warrantyexpires "${WarrantyExpires}" "${PlistLocal}"
-
+	
 	WarrantyStatus=`GetWarrantyStatus HW_SUPPORT_COV_SHORT`
 	echo "WarrantyStatus   ==  ${WarrantyStatus}"
 	SetPlistString warrantystatus "${WarrantyStatus}" "${PlistLocal}"
-
+	
 	ModelType=`GetModelValue PROD_DESC`
 	echo "ModelType        ==  ${ModelType}"
 	SetPlistString modeltype "${ModelType}" "${PlistLocal}"
-
+	
 	AsdVers=`GetAsdVers "${ModelType}"`
 	echo "ASD              ==  ${AsdVers}"
 	SetPlistString asd "${AsdVers}" "${PlistLocal}"
+	
+	# Csv output
+	# Serial#, PurchaseDate, WarrantyExpires, WarrantyStatus, ModelType, AsdVers
+	# echo "${SerialNumber}, ${PurchaseDate}, ${WarrantyExpires}, ${WarrantyStatus}, ${ModelType}, ${AsdVers}" >> warrantyoutput.csv
+	
 else
 	if [[ -z "${SerialNumber}" ]]; then 
 		echo "     No serial number was found."
