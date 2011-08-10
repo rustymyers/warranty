@@ -12,3 +12,5 @@ warrantyoutput.csv
 warrantyLoop.sh
 
 warrantyrefresh.sh
+
+bulkwarrantyoutput.csv

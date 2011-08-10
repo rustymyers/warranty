@@ -26,7 +26,7 @@ fi
 
 [[ -n "${SerialNumber}" ]] && WarrantyInfo=`curl -k -s "https://selfsolve.apple.com/warrantyChecker.do?sn=${SerialNumber}&country=USA" | awk '{gsub(/\",\"/,"\n");print}' | awk '{gsub(/\":\"/,":");print}' | sed s/\"\}\)// > ${WarrantyTempFile}`
 
-curl -k -s https://github.com/chilcote/warranty/raw/master/asdcheck -o ${AsdCheck} > /dev/null 2>&1
+curl -k -s https://raw.github.com/rustymyers/warranty/master/asdcheck -o ${AsdCheck} > /dev/null 2>&1
 
 
 #################
