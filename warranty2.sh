@@ -7,14 +7,8 @@
 # University of Notre Dame
 # http://www.nd.edu/~srussel2/macintosh/bash/warranty.txt
 # Edited to add the ASD Versions by Joseph Chilcote
-# Last Modified: 09/16/2010
-# Edited 02/10/2011
-# Updated support url 
-# Added function to write data to plist
-# Added function to cycle through a csv file
-# Complete rewrite:
-
-
+# Re-wrote by Rusty Myers for csv processing, plist and csv output.
+# Edited 08/10/2011
 
 
 ###############
@@ -25,8 +19,10 @@
 WarrantyTempFile="/tmp/warranty.txt"
 AsdCheck="/tmp/asdcheck.txt"
 Output="."
+CSVOutput="warranty.csv"
+PlistOutput="warranty.plist"
 Format="stdout"
-# PlistLocal="/tmp/appwarranty.plist"
+
 
 
 #################
@@ -95,15 +91,14 @@ GetModelValue()
 }
 GetAsdVers()
 {
-	#echo "${AsdCheck}" | grep -w "${1}:" | awk {'print $1'}
 	grep "${1}:" ${AsdCheck} | awk -F':' {'print $2'}
 }
 
 
 outputPlist() {
-	PlistLocal="${Output}/appwarranty.plist"
+	PlistLocal="${Output}/${PlistOutput}"
 	# Create plist for output
-	# rm "${PlistLocal}" # Probably Unnecessary
+	rm "${PlistLocal}" # Probably Unnecessary, Just being Safe
 	if [[ ! -e "${PlistLocal}" ]]; then
 		AddPlistString warrantyscript version1 "${PlistLocal}"
 		for i in purchasedate warrantyexpires warrantystatus modeltype asd serialnumber
@@ -111,7 +106,6 @@ outputPlist() {
 		AddPlistString $i unknown "${PlistLocal}"
 		done
 	fi
-	# Write data to plist
 	SetPlistString serialnumber "${SerialNumber}" "${PlistLocal}"
 	SetPlistString purchasedate "${PurchaseDate}" "${PlistLocal}"
 	SetPlistString warrantyexpires "${WarrantyExpires}" "${PlistLocal}"
@@ -124,7 +118,7 @@ outputCSV() {
 	# Csv output
 	# Serial#, PurchaseDate, WarrantyExpires, WarrantyStatus, ModelType, AsdVers
 	FixModel=`echo ${ModelType} |tr -d ','`
-	echo "${SerialNumber}, ${PurchaseDate}, ${WarrantyExpires}, ${WarrantyStatus}, ${FixModel}, ${AsdVers}" >> "${Output}/warrantyoutput.csv"
+	echo "${SerialNumber}, ${PurchaseDate}, ${WarrantyExpires}, ${WarrantyStatus}, ${FixModel}, ${AsdVers}" >> "${Output}/${CSVOutput}"
 }
 
 outputSTDOUT() {
@@ -143,36 +137,10 @@ processCSV() {
 for i in `cat "${1}"`; do
 
 SerialNumber="${i}"
-
 checkStatus
-# [[ -n "${SerialNumber}" ]] && WarrantyInfo=`curl -k -s "https://selfsolve.apple.com/warrantyChecker.do?sn=${SerialNumber}&country=USA" | awk '{gsub(/\",\"/,"\n");print}' | awk '{gsub(/\":\"/,":");print}' | sed s/\"\}\)// > ${WarrantyTempFile}`
-# 
-# echo "$(date) ... Checking warranty status"
-# InvalidSerial=`grep "wc.check.err.usr.pd04.invalidserialnumber" "${WarrantyTempFile}"`
-# 
-# if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
-# 	echo "Serial Number    ==  ${SerialNumber}"
-# 
-# 	PurchaseDate=`GetWarrantyValue PURCHASE_DATE`
-# 	WarrantyExpires=`GetWarrantyValue HW_END_DATE`
-# 	WarrantyStatus=`GetWarrantyStatus HW_SUPPORT_COV_SHORT`
-# 	ModelType=`GetModelValue PROD_DESC`
-# 	AsdVers=`GetAsdVers "${ModelType}"`
-	FixModel=`echo ${ModelType} |tr -d ','`
-	# Csv output
-	# Serial#, PurchaseDate, WarrantyExpires, WarrantyStatus, ModelType, AsdVers
-	echo "${SerialNumber}, ${PurchaseDate}, ${WarrantyExpires}, ${WarrantyStatus}, ${FixModel}, ${AsdVers}" >> "${Output}/bulkwarrantyoutput.csv"
-	
-# else
-# 	if [[ -z "${SerialNumber}" ]]; then 
-# 		echo "     No serial number was found."
-# 		SetPlistString warrantystatus "Serial Not Found: ${SerialNumber}" "${PlistLocal}"
-# 	fi
-# 	if [[ -n "${InvalidSerial}" ]]; then
-# 		echo "     Warranty information was not found for ${SerialNumber}."
-# 		SetPlistString warrantystatus "Serial Invalid: ${SerialNumber}" "${PlistLocal}"
-# 	fi
-# fi
+# Remove comma from ModelType for CSV files
+FixModel=`echo ${ModelType} |tr -d ','`
+echo "${SerialNumber}, ${PurchaseDate}, ${WarrantyExpires}, ${WarrantyStatus}, ${FixModel}, ${AsdVers}" >> "${Output}/${CSVOutput}"
 
 done
 exit 0
@@ -181,20 +149,16 @@ exit 0
 
 
 checkStatus() {
-	
-echo "Checking ${SerialNumber}"
 
 [[ -n "${SerialNumber}" ]] && WarrantyInfo=`curl -k -s "https://selfsolve.apple.com/warrantyChecker.do?sn=${SerialNumber}&country=USA" | awk '{gsub(/\",\"/,"\n");print}' | awk '{gsub(/\":\"/,":");print}' | sed s/\"\}\)// > ${WarrantyTempFile}`
 
 InvalidSerial=`grep 'invalidserialnumber\|productdoesnotexist' "${WarrantyTempFile}"`
 
 if [[ -n "${InvalidSerial}" ]]; then
-	# echo " ERROR:    Warranty information was not found for ${SerialNumber}. ${InvalidSerial}"
 	WarrantyStatus="Serial Invalid: ${SerialNumber}. ${InvalidSerial}"
 fi
 	
 if [[ -z "${SerialNumber}" ]]; then 
-	# echo " ERROR:    No serial number was found."
 	WarrantyStatus="Serial Missing: ${SerialNumber}. ${InvalidSerial}"
 fi
 
@@ -202,10 +166,12 @@ if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 
 	PurchaseDate=`GetWarrantyValue PURCHASE_DATE`
 	WarrantyExpires=`GetWarrantyValue HW_END_DATE`
+	WarrantyExpires=`GetWarrantyValue HW_END_DATE|/bin/date -jf "%B %d, %Y" "${WarrantyExpires}" +"%Y-%m-%d"` ## corrects Apple's change to "Month Day, Year" format for HW_END_DATE
 	WarrantyStatus=`GetWarrantyStatus HW_SUPPORT_COV_SHORT`
 	ModelType=`GetModelValue PROD_DESC`
+	# Remove the "OSB" from the beginning of ModelType
 	if [[ `echo ${ModelType}|grep 'OBS'` ]]; 
-	then ModelType=`echo ${ModelType}|sed s/"OBS,"//`
+		then ModelType=`echo ${ModelType}|sed s/"OBS,"//`
 	fi
 	AsdVers=`GetAsdVers "${ModelType}"`	
 fi
@@ -214,7 +180,6 @@ fi
 
 PrintData()
 {
-# echo "You have chosen: ${Format}"
 case $Format in
 	csv)
 	outputCSV
@@ -232,12 +197,8 @@ esac
 ##  APPLICATION  ##
 ###################
 
-# Get serial
-# Get csv
-# Get output options
-# Options:
-# 			csv
-# 			plist
+# Get serial number, csv file
+# Get output options: csv, plist
 
 while getopts s:c:o:f: opt; do
 	case "$opt" in
