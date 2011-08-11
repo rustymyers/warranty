@@ -22,7 +22,7 @@ Output="."
 CSVOutput="warranty.csv"
 PlistOutput="warranty.plist"
 Format="stdout"
-
+Version="2"
 
 
 #################
@@ -35,14 +35,14 @@ cat<<EOF
 
 Input:
 	no flags = use this computers serial
-	-c = loop through csv file
+	-b = loop through BULK csv file
 		 processing a csv file will only output to a 
 		 csv file. other output formats will be ignored
-	-s = specify serial number
+	-s = specify SERIAL number
 
 Output:
-	-f [csv or plist] = format output file to csv or plist
-	-o /path/to/output # Do not include filename
+	-f [csv or plist] = FORMAT output file to csv or plist.
+	-o [/path/to/] = OUTPUT. Don't not include filename. Default is same directory as script.	
 	
 Defaults:
 	WarrantyTempFile="/tmp/warranty.txt"
@@ -59,6 +59,12 @@ Examples:
 	
 	Specify Output format to Plist and save in specified output
 	$0 -f plist -o /Library/Admin/
+	
+	Specify Output format to Plist and save in specified output and a custom name
+	$0 -f plist -o ~/Desktop/ -n myserials.plist
+	
+	Process list of serials and output to custom location and custom name
+	$0 -b serials.csv -o ~/Desktop/ -n myserials.csv
 
 EOF
 }
@@ -98,9 +104,9 @@ GetAsdVers()
 outputPlist() {
 	PlistLocal="${Output}/${PlistOutput}"
 	# Create plist for output
-	rm "${PlistLocal}" # Probably Unnecessary, Just being Safe
+	rm "${PlistLocal}" > /dev/null 2>&1 # Probably Unnecessary, Just being Safe
 	if [[ ! -e "${PlistLocal}" ]]; then
-		AddPlistString warrantyscript version1 "${PlistLocal}"
+		AddPlistString warrantyscript "${Version}" "${PlistLocal}" > /dev/null 2>&1
 		for i in purchasedate warrantyexpires warrantystatus modeltype asd serialnumber
 		do
 		AddPlistString $i unknown "${PlistLocal}"
@@ -166,7 +172,7 @@ if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 
 	PurchaseDate=`GetWarrantyValue PURCHASE_DATE`
 	WarrantyExpires=`GetWarrantyValue HW_END_DATE`
-	WarrantyExpires=`GetWarrantyValue HW_END_DATE|/bin/date -jf "%B %d, %Y" "${WarrantyExpires}" +"%Y-%m-%d"` ## corrects Apple's change to "Month Day, Year" format for HW_END_DATE
+	WarrantyExpires=`GetWarrantyValue HW_END_DATE|/bin/date -jf "%B %d, %Y" "${WarrantyExpires}" +"%Y-%m-%d"` > /dev/null 2>&1 ## corrects Apple's change to "Month Day, Year" format for HW_END_DATE
 	WarrantyStatus=`GetWarrantyStatus HW_SUPPORT_COV_SHORT`
 	ModelType=`GetModelValue PROD_DESC`
 	# Remove the "OSB" from the beginning of ModelType
@@ -200,12 +206,13 @@ esac
 # Get serial number, csv file
 # Get output options: csv, plist
 
-while getopts s:c:o:f: opt; do
+while getopts s:b:o:f:n: opt; do
 	case "$opt" in
 		s) SerialNumber="$OPTARG";;
-		c) SerialCSV="$OPTARG";;
+		b) SerialCSV="$OPTARG";;
 		o) Output="$OPTARG";;
 		f) Format="$OPTARG";;
+		n) OutputName="$OPTARG";;
 		\?)
 			help
 			exit 0;;
@@ -217,8 +224,12 @@ curl -k -s https://raw.github.com/rustymyers/warranty/master/asdcheck -o ${AsdCh
 
 # No command line variables. Use internal serial and run checks
 if [[ -z "$SerialNumber" ]]; then
-	# Internal Serial Number
 	SerialNumber=`system_profiler SPHardwareDataType | grep "Serial Number" | grep -v "tray" |  awk -F ': ' {'print $2'} 2>/dev/null`
+fi
+
+if [ "${OutputName}" ]; then
+	CSVOutput="${OutputName}"
+	PlistOutput="${OutputName}"
 fi
 
 if [[ -z "$SerialCSV" ]]; then
