@@ -41,8 +41,9 @@ Input:
 	-s = specify SERIAL number
 
 Output:
-	-f [csv or plist] = FORMAT output file to csv or plist.
+	-f [csv|plist] = FORMAT output file to csv or plist.
 	-o [/path/to/] = OUTPUT. Don't not include filename. Default is same directory as script.	
+	-n [warranty.plist|.csv] = Speficiy output file NAME. Ensure you use the appropriate extension for your output.
 	
 Defaults:
 	WarrantyTempFile="/tmp/warranty.txt"
@@ -144,9 +145,7 @@ for i in `cat "${1}"`; do
 
 SerialNumber="${i}"
 checkStatus
-# Remove comma from ModelType for CSV files
-FixModel=`echo ${ModelType} |tr -d ','`
-echo "${SerialNumber}, ${PurchaseDate}, ${WarrantyExpires}, ${WarrantyStatus}, ${FixModel}, ${AsdVers}" >> "${Output}/${CSVOutput}"
+outputCSV
 
 done
 exit 0
