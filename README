@@ -3,6 +3,43 @@
 #               about your product. Accepts arguments of machine serial numbers.
 # Edit:         This is a fork @glarizza's script:
 #               https://github.com/huronschools/scripts/blob/master/ruby/warranty.rb
-# Edit:   This is a fork of @chilcote's script:
-#     https://github.com/chilcote/warranty
-#     Adding functions to write details to plists
+# Edit:   		This is a fork of @chilcote's script:
+#     			https://github.com/chilcote/warranty
+
+Script uses BASH and has more function
+
+Known Issue:
+
+Sometimes when processing bulk files, the script spits out one of the serial numbers as unkown and then prints tons of ASD numbers. I'm usure why it does this because the serial usually works if run on a new csv or by itself.
+Input:
+	no flags = use this computers serial
+	-b = loop through BULK csv file
+		 processing a csv file will only output to a 
+		 csv file. other output formats will be ignored
+	-s = specify SERIAL number
+
+Output:
+	-f [csv or plist] = FORMAT output file to csv or plist.
+	-o [/path/to/] = OUTPUT. Don't not include filename. Default is same directory as script.	
+	
+Defaults:
+	WarrantyTempFile="/tmp/warranty.txt"
+	AsdCheck="/tmp/asdcheck.txt"
+	Output="."
+	Format="stdout"
+
+Examples:
+	Default Use - Uses machine serial, prints to screen
+	./warranty2.sh
+	
+	Specify Serial, prints to screen
+	./warranty2.sh -s 4H632JhQXZ
+	
+	Specify Output format to Plist and save in specified output
+	./warranty2.sh -f plist -o /Library/Admin/
+	
+	Specify Output format to Plist and save in specified output and a custom name
+	./warranty2.sh -f plist -o ~/Desktop/ -n myserials.plist
+	
+	Process list of serials and output to custom location and custom name
+	./warranty2.sh -b serials.csv -o ~/Desktop/ -n myserials.csv
