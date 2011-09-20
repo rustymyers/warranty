@@ -1,35 +1,51 @@
-# File:         warranty.rb
-# Decription:   Contact's Apple's selfserve servers to capture warranty information
-#               about your product. Accepts arguments of machine serial numbers.
-# Edit:         This is a fork @glarizza's script:
-#               https://github.com/huronschools/scripts/blob/master/ruby/warranty.rb
-# Edit:   		This is a fork of @chilcote's script:
-#     			https://github.com/chilcote/warranty
+File:
 
-Script uses BASH and has more function
+	warranty2.sh
+
+Description: 
+
+	Looks up Apple warranty info based on serial number. Uses Apple's http://selfsolve.apple.com/warrantyChecker
+
+	Based on a script by Scott Russell, IT Support Engineer, 
+	University of Notre Dame
+	http://www.nd.edu/~srussel2/macintosh/bash/warranty.txt
+
+	Edited to add the ASD Versions by Joseph Chilcote
+
+	Re-wrote by Rusty Myers for csv processing, plist and csv output.
+	Edited 08/10/2011
+
 
 Known Issue:
 
-Sometimes when processing bulk files, the script spits out one of the serial numbers as unkown and then prints tons of ASD numbers. I'm usure why it does this because the serial usually works if run on a new csv or by itself.
-Input:
-	no flags = use this computers serial
-	-b = loop through BULK csv file
-		 processing a csv file will only output to a 
-		 csv file. other output formats will be ignored
-	-s = specify SERIAL number
+	Sometimes when processing bulk files, the script spits out one of the serial numbers as unkown and then prints tons of ASD numbers. 
+	I'm usure why it does this because the serial usually works if run on a new csv or by itself.
 
-Output:
-	-f [csv|plist] = FORMAT output file to csv or plist.
-	-o [/path/to/] = OUTPUT. Don't not include filename. Default is same directory as script.	
-	-n [warranty.plist|.csv] = Speficiy output file NAME. Ensure you use the appropriate extension for your output.
+Usage:
+
+	Input:
+
+		no flags = use this computers serial
+		-b = loop through BULK csv file
+			 processing a csv file will only output to a 
+			 csv file. other output formats will be ignored
+		-s = specify SERIAL number
+
+	Output:
+
+		-f [csv|plist] = FORMAT output file to csv or plist.
+		-o [/path/to/] = OUTPUT. Don't not include filename. Default is same directory as script.	
+		-n [warranty.plist|.csv] = Speficiy output file NAME. Ensure you use the appropriate extension for your output.
 	
-Defaults:
-	WarrantyTempFile="/tmp/warranty.txt"
-	AsdCheck="/tmp/asdcheck.txt"
-	Output="."
-	Format="stdout"
+	Defaults:
+
+		WarrantyTempFile="/tmp/warranty.txt"
+		AsdCheck="/tmp/asdcheck.txt"
+		Output="."
+		Format="stdout"
 
 Examples:
+
 	Default Use - Uses machine serial, prints to screen
 	./warranty2.sh
 	
