@@ -205,13 +205,15 @@ esac
 # Get serial number, csv file
 # Get output options: csv, plist
 
-while getopts s:b:o:f:n: opt; do
+while getopts s:b:o:f:n:h opt; do
 	case "$opt" in
 		s) SerialNumber="$OPTARG";;
 		b) SerialCSV="$OPTARG";;
 		o) Output="$OPTARG";;
 		f) Format="$OPTARG";;
 		n) OutputName="$OPTARG";;
+		h) help
+			exit 0;;
 		\?)
 			help
 			exit 0;;
