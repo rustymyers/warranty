@@ -60,3 +60,21 @@ Examples:
 	
 	Process list of serials and output to custom location and custom name
 	./warranty2.sh -b serials.csv -o ~/Desktop/ -n myserials.csv
+
+
+-----------------------------------------------------------------------
+
+File:
+
+	warranty.rb
+
+Description:
+
+	Contact's Apple's selfserve servers to capture warranty information
+	about your product. Accepts arguments of machine serial numbers. Outputs
+	to STDOUT and a plist in the same directory.
+	
+Usage:
+
+	warranty.rb
+
