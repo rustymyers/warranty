@@ -30,6 +30,7 @@ Usage:
 			 processing a csv file will only output to a 
 			 csv file. other output formats will be ignored
 		-s = specify SERIAL number
+		-h = print help
 
 	Output:
 
