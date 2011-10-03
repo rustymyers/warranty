@@ -142,7 +142,8 @@ outputSTDOUT() {
 outputDSProperties() {
 	#Write data to DeployStudio Properties
 	echo "RuntimeSetCustomProperty: SerialNumber=${SerialNumber}"
-	echo "RuntimeSetCustomProperty: PurchaseDate=${PurchaseDate}"
+	# //-/ removes the dashes from the Purchase date.  Useful for conditional statements.
+	echo "RuntimeSetCustomProperty: PurchaseDate=${PurchaseDate//-/}"
 	echo "RuntimeSetCustomProperty: WarrantyExpires=${WarrantyExpires}
 	echo "RuntimeSetCustomProperty: WarrantyStatus=${WarrantyStatus}"
 	echo "RuntimeSetCustomProperty: ModelType=${ModelType}"
