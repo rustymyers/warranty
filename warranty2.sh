@@ -139,6 +139,15 @@ outputSTDOUT() {
 	echo "ASD              ==  ${AsdVers}"
 }
 
+outputDSProperties() {
+	#Write data to DeployStudio Properties
+	echo "RuntimeSetCustomProperty: SerialNumber=${SerialNumber}"
+	echo "RuntimeSetCustomProperty: PurchaseDate=${PurchaseDate}"
+	echo "RuntimeSetCustomProperty: WarrantyExpires=${WarrantyExpires}
+	echo "RuntimeSetCustomProperty: WarrantyStatus=${WarrantyStatus}"
+	echo "RuntimeSetCustomProperty: ModelType=${ModelType}"
+	echo "RuntimeSetCustomProperty: ASD=${AsdVers}"
+	
 processCSV() {
 
 for i in `cat "${1}"`; do
