@@ -147,7 +147,7 @@ outputDSProperties() {
 	echo "RuntimeSetCustomProperty: WarrantyStatus=${WarrantyStatus}"
 	echo "RuntimeSetCustomProperty: ModelType=${ModelType}"
 	echo "RuntimeSetCustomProperty: ASD=${AsdVers}"
-	
+
 processCSV() {
 
 for i in `cat "${1}"`; do
@@ -207,9 +207,6 @@ case $Format in
 	DSProperties)
 	outputDSProperties
 	;;
-	DSVariables)
-	outputDSVariables
-	;;	
 esac
 }
 
