@@ -195,6 +195,12 @@ case $Format in
 	stdout)
 	outputSTDOUT
 	;;
+	DSProperties)
+	outputDSProperties
+	;;
+	DSVariables)
+	outputDSVariables
+	;;	
 esac
 }
 
