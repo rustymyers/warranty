@@ -144,10 +144,11 @@ outputDSProperties() {
 	echo "RuntimeSetCustomProperty: SerialNumber=${SerialNumber}"
 	# //-/ removes the dashes from the Purchase date.  Useful for conditional statements.
 	echo "RuntimeSetCustomProperty: PurchaseDate=${PurchaseDate//-/}"
-	echo "RuntimeSetCustomProperty: WarrantyExpires=${WarrantyExpires}
+	echo "RuntimeSetCustomProperty: WarrantyExpires=${WarrantyExpires}"
 	echo "RuntimeSetCustomProperty: WarrantyStatus=${WarrantyStatus}"
 	echo "RuntimeSetCustomProperty: ModelType=${ModelType}"
 	echo "RuntimeSetCustomProperty: ASD=${AsdVers}"
+}
 
 processCSV() {
 
