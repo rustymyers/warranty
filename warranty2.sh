@@ -182,8 +182,9 @@ if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 
 	PurchaseDate=`GetWarrantyValue PURCHASE_DATE`
 	WarrantyExpires=`GetWarrantyValue HW_END_DATE`
-	# This date conversion is throwing an error on Lion
-	WarrantyExpires=`GetWarrantyValue HW_END_DATE|/bin/date -jf "%B %d, %Y" "${WarrantyExpires}" +"%Y-%m-%d"` > /dev/null 2>&1 ## corrects Apple's change to "Month Day, Year" format for HW_END_DATE
+	if [[ -n $WarrantyExpires ]]; then
+		WarrantyExpires=`GetWarrantyValue HW_END_DATE|/bin/date -jf "%B %d, %Y" "${WarrantyExpires}" +"%Y-%m-%d"` > /dev/null 2>&1 ## corrects Apple's change to "Month Day, Year" format for HW_END_DATE
+	fi
 	WarrantyStatus=`GetWarrantyStatus HW_SUPPORT_COV_SHORT`
 	ModelType=`GetModelValue PROD_DESC`
 	# Remove the "OSB" from the beginning of ModelType
