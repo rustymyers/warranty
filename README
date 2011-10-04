@@ -34,7 +34,7 @@ Usage:
 
 	Output:
 
-		-f [csv|plist] = FORMAT output file to csv or plist.
+		-f [csv|plist|DSProperties] = FORMAT output file to csv, plist, or DeployStudio format.
 		-o [/path/to/] = OUTPUT. Don't not include filename. Default is same directory as script.	
 		-n [warranty.plist|.csv] = Speficiy output file NAME. Ensure you use the appropriate extension for your output.
 	
@@ -50,19 +50,39 @@ Examples:
 	Default Use - Uses machine serial, prints to screen
 	./warranty2.sh
 	
-	Specify Serial, prints to screen
+	Specify serial, prints to screen
 	./warranty2.sh -s 4H632JhQXZ
 	
-	Specify Output format to Plist and save in specified output
+	Specify output format to Plist and save in specified output
 	./warranty2.sh -f plist -o /Library/Admin/
 	
-	Specify Output format to Plist and save in specified output and a custom name
+	Specify output format to Plist and save in specified output and a custom name
 	./warranty2.sh -f plist -o ~/Desktop/ -n myserials.plist
 	
 	Process list of serials and output to custom location and custom name
 	./warranty2.sh -b serials.csv -o ~/Desktop/ -n myserials.csv
+	
+	Print the output during DeployStudio workflow to enter into custom properties.
+	http://www.deploystudio.com/News/Entries/2011/7/20_DeployStudio_Server_1.0rc128.html
+	./warranty2.sh -f DSProperties
 
 
+To Do:
+
+	Pull in the following...
+
+	Hardware Image:
+	null({"PROD_IMAGE_URL:https://km.support.apple.com.edgekey.net/kb/securedImage.jsp?configcode=YA8&size=72x72
+
+	Number of days since purchase:
+	NUM_DAYS_SINCE_DOP:1557
+	
+	Number of days remaining in coverage:
+	DAYS_REM_IN_COV:180
+	
+	Serial is an iPhone
+	IS_IPHONE:N
+	
 -----------------------------------------------------------------------
 
 File:

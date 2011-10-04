@@ -22,3 +22,9 @@ warranty.csv
 warrantySysMan.sh
 
 depreciated/warranty.sh
+
+warranty output/warrantywhite.txt
+
+warranty output/warrantyEXP.txt
+
+warranty output/warranty.txt

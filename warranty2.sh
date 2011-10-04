@@ -8,7 +8,7 @@
 # http://www.nd.edu/~srussel2/macintosh/bash/warranty.txt
 # Edited to add the ASD Versions by Joseph Chilcote
 # Re-wrote by Rusty Myers for csv processing, plist and csv output.
-# Edited 08/10/2011
+# Edited 11/03/2011
 
 
 ###############
@@ -41,7 +41,7 @@ Input:
 	-s = specify SERIAL number
 
 Output:
-	-f [csv|plist] = FORMAT output file to csv or plist.
+	-f [csv|plist|DSProperties] = FORMAT output file to csv, plist, or DeployStudio format.
 	-o [/path/to/] = OUTPUT. Don't not include filename. Default is same directory as script.	
 	-n [warranty.plist|.csv] = Speficiy output file NAME. Ensure you use the appropriate extension for your output.
 	
@@ -66,6 +66,10 @@ Examples:
 	
 	Process list of serials and output to custom location and custom name
 	$0 -b serials.csv -o ~/Desktop/ -n myserials.csv
+
+	Print the output during DeployStudio workflow to enter into custom properties.
+	http://www.deploystudio.com/News/Entries/2011/7/20_DeployStudio_Server_1.0rc128.html
+	$0 -f DSProperties
 
 EOF
 }
@@ -167,18 +171,27 @@ if [[ -z "${SerialNumber}" ]]; then
 	WarrantyStatus="Serial Missing: ${SerialNumber}. ${InvalidSerial}"
 fi
 
+
+
 if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 
-	PurchaseDate=`GetWarrantyValue PURCHASE_DATE`
-	WarrantyExpires=`GetWarrantyValue HW_END_DATE`
-	WarrantyExpires=`GetWarrantyValue HW_END_DATE|/bin/date -jf "%B %d, %Y" "${WarrantyExpires}" +"%Y-%m-%d"` > /dev/null 2>&1 ## corrects Apple's change to "Month Day, Year" format for HW_END_DATE
+	PurchaseDate=`GetWarrantyValue PURCHASE_DATE`	
 	WarrantyStatus=`GetWarrantyStatus HW_SUPPORT_COV_SHORT`
+	WarrantyExpires=`GetWarrantyValue HW_END_DATE`
+	if [[ -n "$WarrantyExpires" ]]; then
+		WarrantyExpires=`GetWarrantyValue HW_END_DATE|/bin/date -jf "%B %d, %Y" "${WarrantyExpires}" +"%Y-%m-%d"` > /dev/null 2>&1 ## corrects Apple's change to "Month Day, Year" format for HW_END_DATE	
+	else
+		WarrantyExpires="${WarrantyStatus}"
+	fi
 	ModelType=`GetModelValue PROD_DESC`
+	# HW_COVERAGE_DESC
+	
 	# Remove the "OSB" from the beginning of ModelType
 	if [[ `echo ${ModelType}|grep 'OBS'` ]]; 
 		then ModelType=`echo ${ModelType}|sed s/"OBS,"//`
 	fi
 	AsdVers=`GetAsdVers "${ModelType}"`	
+	#rm "${WarrantyTempFile}"
 fi
 
 }
@@ -239,5 +252,7 @@ PrintData
 else
 processCSV "${SerialCSV}"
 fi
+
+rm "${AsdCheck}"
 
 exit 0
