@@ -16,13 +16,13 @@
 ###############
 
 # make sure you use a full path
-WarrantyTempFile="/tmp/warranty.txt"
-AsdCheck="/tmp/asdcheck.txt"
+WarrantyTempFile="/tmp/warranty.`date +%s`.txt"
+AsdCheck="/tmp/asdcheck.`date +%s`.txt"
 Output="."
 CSVOutput="warranty.csv"
 PlistOutput="warranty.plist"
 Format="stdout"
-Version="2"
+Version="3"
 
 
 #################
@@ -143,6 +143,17 @@ outputSTDOUT() {
 	echo "ASD              ==  ${AsdVers}"
 }
 
+outputDSProperties() {
+	#Write data to DeployStudio Properties
+	echo "RuntimeSetCustomProperty: SerialNumber=${SerialNumber}"
+	# //-/ removes the dashes from the Purchase date.  Useful for conditional statements.
+	echo "RuntimeSetCustomProperty: PurchaseDate=${PurchaseDate//-/}"
+	echo "RuntimeSetCustomProperty: WarrantyExpires=${WarrantyExpires}"
+	echo "RuntimeSetCustomProperty: WarrantyStatus=${WarrantyStatus}"
+	echo "RuntimeSetCustomProperty: ModelType=${ModelType}"
+	echo "RuntimeSetCustomProperty: ASD=${AsdVers}"
+}
+
 processCSV() {
 
 for i in `cat "${1}"`; do
@@ -207,6 +218,9 @@ case $Format in
 	;;
 	stdout)
 	outputSTDOUT
+	;;
+	DSProperties)
+	outputDSProperties
 	;;
 esac
 }

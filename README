@@ -13,13 +13,12 @@ Description:
 	Edited to add the ASD Versions by Joseph Chilcote
 
 	Re-wrote by Rusty Myers for csv processing, plist and csv output.
-	Edited 08/10/2011
+	Edited 11/03/2011
 
 
 Known Issue:
 
-	Sometimes when processing bulk files, the script spits out one of the serial numbers as unkown and then prints tons of ASD numbers. 
-	I'm usure why it does this because the serial usually works if run on a new csv or by itself.
+	None	
 
 Usage:
 
@@ -83,6 +82,14 @@ To Do:
 	Serial is an iPhone
 	IS_IPHONE:N
 	
+Resolved:
+
+	P) Sometimes when processing bulk files, the script spits out one of the serial numbers as unkown and then prints tons of ASD numbers. 
+	I'm usure why it does this because the serial usually works if run on a new csv or by itself.
+	
+	S) When running the script in twice, the asd and warranty temp files are overwritten by each process.
+	The fix is to add a unique identifier to the filename. Each process will have it's own files.
+
 -----------------------------------------------------------------------
 
 File:
