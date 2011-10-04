@@ -8,6 +8,7 @@
 # http://www.nd.edu/~srussel2/macintosh/bash/warranty.txt
 # Edited to add the ASD Versions by Joseph Chilcote
 # Re-wrote by Rusty Myers for csv processing, plist and csv output.
+# DSProperties output and HW_END_DATE error fix by Nate Walck.
 # Edited 11/03/2011
 
 
