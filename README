@@ -28,8 +28,10 @@ Usage:
 
 		no flags = use this computers serial
 		-b = loop through BULK csv file
-			 processing a csv file will only output to a 
-			 csv file. other output formats will be ignored
+			* Your BULK file should list each serial on a 
+			new line and not have any commas.
+			* Processing a csv file will only output to a 
+			csv file. other output formats will be ignored
 		-s = specify SERIAL number
 		-h = print help
 
@@ -64,7 +66,7 @@ Examples:
 	./warranty2.sh -b serials.csv -o ~/Desktop/ -n myserials.csv
 	
 	Print the output during DeployStudio workflow to enter into custom properties.
-	http://www.deploystudio.com/News/Entries/2011/7/20_DeployStudio_Server_1.0rc128.html
+	More info: http://osxadm.in/?p=64
 	./warranty2.sh -f DSProperties
 
 

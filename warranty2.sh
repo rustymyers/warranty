@@ -9,7 +9,7 @@
 # Edited to add the ASD Versions by Joseph Chilcote
 # Re-wrote by Rusty Myers for csv processing, plist and csv output.
 # DSProperties output and HW_END_DATE error fix by Nate Walck.
-# Edited 11/03/2011
+# Edited 01/11/2012
 
 
 ###############
@@ -93,10 +93,6 @@ GetWarrantyValue()
 {
 	grep ^"${1}" ${WarrantyTempFile} | awk -F ':' {'print $2'}
 }
-GetWarrantyStatus()
-{
-	grep ^"${1}" ${WarrantyTempFile} | awk -F ':' {'print $2'}
-}
 GetModelValue()
 {
 	grep "${1}" ${WarrantyTempFile} | awk -F ':' {'print $2'}
@@ -112,8 +108,8 @@ outputPlist() {
 	# Create plist for output
 	rm "${PlistLocal}" > /dev/null 2>&1 # Probably Unnecessary, Just being Safe
 	if [[ ! -e "${PlistLocal}" ]]; then
-		AddPlistString warrantyscript "${Version}" "${PlistLocal}" > /dev/null 2>&1
-		for i in purchasedate warrantyexpires warrantystatus modeltype asd serialnumber
+		AddPlistString warrantyscriptversion "${Version}" "${PlistLocal}" > /dev/null 2>&1
+		for i in purchasedate warrantyexpires warrantystatus modeltype asd serialnumber currentdate
 		do
 		AddPlistString $i unknown "${PlistLocal}"
 		done
@@ -124,6 +120,7 @@ outputPlist() {
 	SetPlistString warrantystatus "${WarrantyStatus}" "${PlistLocal}"
 	SetPlistString modeltype "${ModelType}" "${PlistLocal}"
 	SetPlistString asd "${AsdVers}" "${PlistLocal}"
+	SetPlistString currentdate `date "+%m/%d/%Y"` "${PlistLocal}"
 }
 
 outputCSV() {
@@ -162,7 +159,7 @@ for i in `cat "${1}"`; do
 SerialNumber="${i}"
 checkStatus
 outputCSV
-
+sleep 5
 done
 exit 0
 
@@ -188,7 +185,7 @@ fi
 if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 
 	PurchaseDate=`GetWarrantyValue PURCHASE_DATE`	
-	WarrantyStatus=`GetWarrantyStatus HW_SUPPORT_COV_SHORT`
+	WarrantyStatus=`GetWarrantyValue HW_SUPPORT_COV_SHORT`
 	WarrantyExpires=`GetWarrantyValue HW_END_DATE`
 	if [[ -n "$WarrantyExpires" ]]; then
 		WarrantyExpires=`GetWarrantyValue HW_END_DATE|/bin/date -jf "%B %d, %Y" "${WarrantyExpires}" +"%Y-%m-%d"` > /dev/null 2>&1 ## corrects Apple's change to "Month Day, Year" format for HW_END_DATE	
@@ -203,7 +200,7 @@ if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 		then ModelType=`echo ${ModelType}|sed s/"OBS,"//`
 	fi
 	AsdVers=`GetAsdVers "${ModelType}"`	
-	#rm "${WarrantyTempFile}"
+	rm "${WarrantyTempFile}"
 fi
 
 }
@@ -226,6 +223,11 @@ case $Format in
 esac
 }
 
+FixDateYYYYMMDD()
+{
+	echo "${1}" | awk -F '-' {'print $2"/"$3"/"$1'}
+}
+
 ###################
 ##  APPLICATION  ##
 ###################
@@ -233,13 +235,14 @@ esac
 # Get serial number, csv file
 # Get output options: csv, plist
 
-while getopts s:b:o:f:n:h opt; do
+while getopts s:b:o:f:n:dh opt; do
 	case "$opt" in
 		s) SerialNumber="$OPTARG";;
 		b) SerialCSV="$OPTARG";;
 		o) Output="$OPTARG";;
 		f) Format="$OPTARG";;
 		n) OutputName="$OPTARG";;
+		d) FixDate=1;;
 		h) help
 			exit 0;;
 		\?)
