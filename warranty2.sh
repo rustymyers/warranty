@@ -5,11 +5,12 @@
 
 # Based on a script by Scott Russell, IT Support Engineer, 
 # University of Notre Dame
-# http://www.nd.edu/~srussel2/macintosh/bash/warranty.txt
 # Edited to add the ASD Versions by Joseph Chilcote
 # Re-wrote by Rusty Myers for csv processing, plist and csv output.
 # DSProperties output and HW_END_DATE error fix by Nate Walck.
-# Edited 01/11/2012
+# Days since DOP and Days remaining added by n8felton (02/09/2012)
+#
+# Last Edited 02/09/2012
 
 
 ###############
@@ -47,8 +48,8 @@ Output:
 	-n [warranty.plist|.csv] = Speficiy output file NAME. Ensure you use the appropriate extension for your output.
 	
 Defaults:
-	WarrantyTempFile="/tmp/warranty.txt"
-	AsdCheck="/tmp/asdcheck.txt"
+	WarrantyTempFile="/tmp/warranty.<currentdate>.txt"
+	AsdCheck="/tmp/asdcheck.<currentdate>.txt"
 	Output="."
 	Format="stdout"
 
@@ -102,14 +103,13 @@ GetAsdVers()
 	grep "${1}:" ${AsdCheck} | awk -F':' {'print $2'}
 }
 
-
 outputPlist() {
 	PlistLocal="${Output}/${PlistOutput}"
 	# Create plist for output
 	rm "${PlistLocal}" > /dev/null 2>&1 # Probably Unnecessary, Just being Safe
 	if [[ ! -e "${PlistLocal}" ]]; then
 		AddPlistString warrantyscriptversion "${Version}" "${PlistLocal}" > /dev/null 2>&1
-		for i in purchasedate warrantyexpires warrantystatus modeltype asd serialnumber currentdate
+		for i in purchasedate warrantyexpires warrantystatus modeltype asd serialnumber currentdate daysremaining dayssincedop
 		do
 		AddPlistString $i unknown "${PlistLocal}"
 		done
@@ -120,25 +120,29 @@ outputPlist() {
 	SetPlistString warrantystatus "${WarrantyStatus}" "${PlistLocal}"
 	SetPlistString modeltype "${ModelType}" "${PlistLocal}"
 	SetPlistString asd "${AsdVers}" "${PlistLocal}"
+	SetPlistString daysremaining "${DaysRemaining}" "${PlistLocal}"
+	SetPlistString dayssincedop "${DaysSinceDOP}" "${PlistLocal}"
 	SetPlistString currentdate `date "+%m/%d/%Y"` "${PlistLocal}"
 }
 
 outputCSV() {
 	# Csv output
-	# Serial#, PurchaseDate, WarrantyExpires, WarrantyStatus, ModelType, AsdVers
+	# Serial#, PurchaseDate, DaysSinceDOP, WarrantyExpires, DaysRemaining, WarrantyStatus, ModelType, AsdVers
 	FixModel=`echo ${ModelType} |tr -d ','`
-	echo "${SerialNumber}, ${PurchaseDate}, ${WarrantyExpires}, ${WarrantyStatus}, ${FixModel}, ${AsdVers}" >> "${Output}/${CSVOutput}"
+	echo "${SerialNumber}, ${PurchaseDate}, ${DaysSinceDOP}, ${WarrantyExpires}, ${DaysRemaining}, ${WarrantyStatus}, ${FixModel}, ${AsdVers}" >> "${Output}/${CSVOutput}"
 }
 
 outputSTDOUT() {
 	# Write data to STDOUT
 	echo "$(date) ... Checking warranty status"
-	echo "Serial Number    ==  ${SerialNumber}"
-	echo "PurchaseDate     ==  ${PurchaseDate}"
-	echo "WarrantyExpires  ==  ${WarrantyExpires}"
-	echo "WarrantyStatus   ==  ${WarrantyStatus}"
-	echo "ModelType        ==  ${ModelType}"
-	echo "ASD              ==  ${AsdVers}"
+	echo "Serial Number       ==  ${SerialNumber}"
+	echo "PurchaseDate        ==  ${PurchaseDate}"
+	echo "Days Since Purchase ==  ${DaysSinceDOP}"
+	echo "WarrantyExpires     ==  ${WarrantyExpires}"
+	echo "Days Remaining      ==  ${DaysRemaining}"
+	echo "WarrantyStatus      ==  ${WarrantyStatus}"
+	echo "ModelType           ==  ${ModelType}"
+	echo "ASD                 ==  ${AsdVers}"
 }
 
 outputDSProperties() {
@@ -146,10 +150,14 @@ outputDSProperties() {
 	echo "RuntimeSetCustomProperty: SERIAL_NUMBER=${SerialNumber}"
 	# //-/ removes the dashes from the Purchase date.  Useful for conditional statements.
 	echo "RuntimeSetCustomProperty: PURCHASE_DATE=${PurchaseDate//-/}"
+	echo "RuntimeSetCustomProperty: DAYS_SINCE_DOP=${DaysSinceDOP}"	
 	echo "RuntimeSetCustomProperty: WARRANTY_EXPIRES=${WarrantyExpires}"
+	echo "RuntimeSetCustomProperty: DAYS_REMAINING=${DaysRemaining}"
 	echo "RuntimeSetCustomProperty: WARRANTY_STATUS=${WarrantyStatus}"
 	echo "RuntimeSetCustomProperty: MODEL_TYPE=${ModelType}"
 	echo "RuntimeSetCustomProperty: ASD=${AsdVers}"
+	#A timestamp of the last time the information was polled for the "Days" information
+	echo "RuntimeSetCustomProperty: LAST_POLL=$(date +%Y-%m-%d)"	
 }
 
 processCSV() {
@@ -168,7 +176,11 @@ exit 0
 
 checkStatus() {
 
-[[ -n "${SerialNumber}" ]] && WarrantyInfo=`curl -k -s "https://selfsolve.apple.com/warrantyChecker.do?sn=${SerialNumber}&country=USA" | awk '{gsub(/\",\"/,"\n");print}' | awk '{gsub(/\":\"/,":");print}' | sed s/\"\}\)// > ${WarrantyTempFile}`
+WarrantyURL="https://selfsolve.apple.com/warrantyChecker.do?sn=${SerialNumber}&country=USA"
+
+[[ -n "${SerialNumber}" ]] && WarrantyInfo=`curl -k -s $WarrantyURL | awk '{gsub(/\",\"/,"\n");print}' | awk '{gsub(/\":\"/,":");print}' | sed s/\"\}\)// > ${WarrantyTempFile}`
+
+#cat ${WarrantyTempFile}
 
 InvalidSerial=`grep 'invalidserialnumber\|productdoesnotexist' "${WarrantyTempFile}"`
 
@@ -199,7 +211,14 @@ if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 	if [[ `echo ${ModelType}|grep 'OBS'` ]]; 
 		then ModelType=`echo ${ModelType}|sed s/"OBS,"//`
 	fi
-	AsdVers=`GetAsdVers "${ModelType}"`	
+	AsdVers=`GetAsdVers "${ModelType}"`
+	
+	#Days since purchase
+	DaysSinceDOP=$(GetWarrantyValue NUM_DAYS_SINCE_DOP)
+	
+	#Days remaining
+	DaysRemaining=$(GetWarrantyValue DAYS_REM_IN_COV)
+	
 	rm "${WarrantyTempFile}"
 fi
 
