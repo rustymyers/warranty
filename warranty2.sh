@@ -9,8 +9,9 @@
 # Re-wrote by Rusty Myers for csv processing, plist and csv output.
 # DSProperties output and HW_END_DATE error fix by Nate Walck.
 # Days since DOP and Days remaining added by n8felton (02/09/2012)
+# SPX output format added by n8felton (02/27/2012)
 #
-# Last Edited 02/09/2012
+# Last Edited 02/27/2012
 
 
 ###############
