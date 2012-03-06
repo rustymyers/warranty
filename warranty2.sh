@@ -56,6 +56,7 @@ Defaults:
 	Output="${Output}"
 	Format="${Format}"
 
+
 Examples:
 	Default Use - Uses machine serial, prints to screen
 	$0
