@@ -5,6 +5,7 @@
 
 # Based on a script by Scott Russell, IT Support Engineer, 
 # University of Notre Dame
+# http://www.nd.edu/~srussel2/macintosh/bash/warranty.txt
 # Edited to add the ASD Versions by Joseph Chilcote
 # Re-wrote by Rusty Myers for csv processing, plist and csv output.
 # DSProperties output and HW_END_DATE error fix by Nate Walck.
@@ -12,7 +13,6 @@
 # SPX output format added by n8felton (02/27/2012)
 #
 # Last Edited 02/27/2012
-
 
 ###############
 ##  GLOBALS  ##
@@ -27,8 +27,8 @@ CSVOutput="warranty.csv"
 PlistOutput="warranty.plist"
 SPXOutput="warranty.spx"
 Format="stdout"
-Version="3"
-
+Version="4"
+NODEBUGG=1
 
 #################
 ##  FUNCTIONS  ##
@@ -47,7 +47,7 @@ Input:
 
 Output:
 	-f [csv|plist|spx|DSProperties] = FORMAT output file to csv, plist, spx, or DeployStudio format.
-	-o [/path/to/] = OUTPUT. Do not include filename. Default is the current working directory.
+	-o [/path/to/] = OUTPUT. Use Full Path. Do not include filename. Default is same directory as script.
 	-n <filename>[.plist|.csv|.spx] = Speficiy output filename. Ensure you use the appropriate extension for your output.
 	
 Defaults:
@@ -55,7 +55,6 @@ Defaults:
 	AsdCheck="${AsdCheck}"
 	Output="${Output}"
 	Format="${Format}"
-
 
 Examples:
 	Default Use - Uses machine serial, prints to screen
@@ -111,6 +110,11 @@ GetModelValue()
 GetAsdVers()
 {
 	grep "${1}:" ${AsdCheck} | awk -F':' {'print $2'}
+}
+
+FixDate()
+{
+	echo "${1}" | awk -F '-' {'print $2"/"$3"/"$1'}
 }
 
 outputPlist() {
@@ -203,8 +207,10 @@ EOF
 
 processCSV() {
 
+echo "Creating ${Output}/${CSVOutput}"
+echo "SerialNumber, PurchaseDate, DaysSinceDOP, WarrantyExpires, DaysRemaining, WarrantyStatus, FixModel, AsdVers" >> "${Output}/${CSVOutput}"
 for i in $(cat "${1}"); do
-
+echo "Checking ${i}"
 SerialNumber="${i}"
 checkStatus
 outputCSV
@@ -259,7 +265,10 @@ if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 	#Days remaining
 	DaysRemaining=$(GetWarrantyValue DAYS_REM_IN_COV)
 	
-	rm "${WarrantyTempFile}"
+	# Delete temp files if NODEBUGG is 0
+	if [[ "${NODEBUGG}" = 0 ]]; then
+		rm "${WarrantyTempFile}"
+	fi
 fi
 
 }
@@ -296,6 +305,7 @@ FixDateYYYYMMDD()
 
 # Get serial number, csv file
 # Get output options: csv, plist
+# You should be exporting this to a static place you can pull reports from.
 
 while getopts s:b:o:f:n:dh opt; do
 	case "$opt" in
@@ -314,7 +324,11 @@ while getopts s:b:o:f:n:dh opt; do
 done
 shift $(expr $OPTIND - 1)
 
-curl -k -s https://raw.github.com/rustymyers/warranty/master/asdcheck -o ${AsdCheck} > /dev/null 2>&1
+
+## Add Timeout so this curl doesn't try forever when GitHub raw is down. Cache a local copy? Try alternate forks?
+## Fail to unknown ASD after 5 seconds? Don't take too long, you'll get the numbers eventually. 
+
+curl -k -s https://raw.github.com/rustymyers/warranty/master/asdcheck -o ${AsdCheck} #> /dev/null 2>&1
 
 # No command line variables. Use internal serial and run checks
 if [[ -z "$SerialNumber" ]]; then
