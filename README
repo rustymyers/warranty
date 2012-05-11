@@ -17,6 +17,7 @@ Description:
 	DSProperties output and HW_END_DATE error fix by Nate Walck.
 	Edited 11/03/2011
 
+	Adding iOS Device support and specific fields. Adding logic to only show appropriate fields should be done, later...
 
 Known Issue:
 
@@ -39,21 +40,24 @@ Usage:
 
 	Output:
 
-		-f [csv|plist|DSProperties] = FORMAT output file to csv, plist, or DeployStudio format.
+		-f [csv|plist|DSProperties|spx] = FORMAT output file to csv, plist, spx, or DeployStudio format.
 
 		-o [/path/to/] = OUTPUT. Don't not include filename. Default is same directory as script.	
 
 		-n [warranty.plist|.csv] = Speficiy output file NAME. Ensure you use the appropriate extension for your output.
 	
+		-v = Enable sexy verboseness
+		
+		-k = Enable debugging (Don't delete temp files)
+
 	Defaults:
 
 		WarrantyTempFile="/tmp/warranty.txt"
 		AsdCheck="/tmp/asdcheck.txt"
 		Output="."
 		Format="stdout"
-		NODEBUGG=	# Set to 1 to enable debugging ( Don't delete temp files )
-		VERBOSE=	# Set to 1 to enable verbose l
-
+		DEBUGG=
+		VERBOSE=	
 
 Examples:
 
@@ -84,12 +88,6 @@ To Do:
 	Hardware Image:
 	null({"PROD_IMAGE_URL:https://km.support.apple.com.edgekey.net/kb/securedImage.jsp?configcode=YA8&size=72x72
 
-	Number of days since purchase:
-	NUM_DAYS_SINCE_DOP:1557
-	
-	Number of days remaining in coverage:
-	DAYS_REM_IN_COV:180
-	
 	Serial is an iPhone
 	IS_IPHONE:N
 	
@@ -100,6 +98,21 @@ Resolved:
 	
 	S) When running the script in twice, the asd and warranty temp files are overwritten by each process.
 	The fix is to add a unique identifier to the filename. Each process will have it's own files.
+
+	Number of days since purchase has been added.
+		NUM_DAYS_SINCE_DOP:1557
+	
+	Number of days remaining in coverage has been added.
+		DAYS_REM_IN_COV:180
+	
+	Is serial an iPhone has been added
+		IS_IPHONE:Y or N
+	
+	iPhone Carrier has been added (not showing anything yet?)
+		CARRIER:
+	
+	iPhone Part Description has been added
+		PART_DESCR:IPHONE 4 32GB BLACK
 
 -----------------------------------------------------------------------
 
