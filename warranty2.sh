@@ -27,7 +27,7 @@ CSVOutput="warranty.csv"
 PlistOutput="warranty.plist"
 SPXOutput="warranty.spx"
 Format="stdout"
-Version="4"
+Version="5"
 NODEBUGG=	# Set to 1 to enable debugging ( Don't delete temp files )
 VERBOSE=	# Set to 1 to enable verbose l
 

@@ -12,7 +12,7 @@ Description:
 
 	Edited to add the ASD Versions by Joseph Chilcote
 
-	Re-wrote by Rusty Myers for csv processing, plist and csv output.
+	Re-written by Rusty Myers for csv processing, plist and csv output.
 	
 	DSProperties output and HW_END_DATE error fix by Nate Walck.
 	Edited 11/03/2011
@@ -32,13 +32,17 @@ Usage:
 			new line and not have any commas.
 			* Processing a csv file will only output to a 
 			csv file. other output formats will be ignored
+
 		-s = specify SERIAL number
+
 		-h = print help
 
 	Output:
 
 		-f [csv|plist|DSProperties] = FORMAT output file to csv, plist, or DeployStudio format.
+
 		-o [/path/to/] = OUTPUT. Don't not include filename. Default is same directory as script.	
+
 		-n [warranty.plist|.csv] = Speficiy output file NAME. Ensure you use the appropriate extension for your output.
 	
 	Defaults:
@@ -47,6 +51,9 @@ Usage:
 		AsdCheck="/tmp/asdcheck.txt"
 		Output="."
 		Format="stdout"
+		NODEBUGG=	# Set to 1 to enable debugging ( Don't delete temp files )
+		VERBOSE=	# Set to 1 to enable verbose l
+
 
 Examples:
 
