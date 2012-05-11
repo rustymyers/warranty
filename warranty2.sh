@@ -28,7 +28,8 @@ PlistOutput="warranty.plist"
 SPXOutput="warranty.spx"
 Format="stdout"
 Version="4"
-NODEBUGG=1
+NODEBUGG=	# Set to 1 to enable debugging ( Don't delete temp files )
+VERBOSE=	# Set to 1 to enable verbose l
 
 #################
 ##  FUNCTIONS  ##
@@ -206,11 +207,19 @@ EOF
 }
 
 processCSV() {
+if [ "$VERBOSE" ]; then 
+	echo "Creating ${Output}/${CSVOutput}"
+fi
 
-echo "Creating ${Output}/${CSVOutput}"
+# Echo headings into CSV file.
 echo "SerialNumber, PurchaseDate, DaysSinceDOP, WarrantyExpires, DaysRemaining, WarrantyStatus, FixModel, AsdVers" >> "${Output}/${CSVOutput}"
+
 for i in $(cat "${1}"); do
-echo "Checking ${i}"
+
+if [ "$VERBOSE" ]; then 
+	echo "Checking ${i}"
+fi
+
 SerialNumber="${i}"
 checkStatus
 outputCSV
@@ -265,8 +274,8 @@ if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 	#Days remaining
 	DaysRemaining=$(GetWarrantyValue DAYS_REM_IN_COV)
 	
-	# Delete temp files if NODEBUGG is 0
-	if [[ "${NODEBUGG}" = 0 ]]; then
+	# Delete temp files if NODEBUGG is 1
+	if [[ "${NODEBUGG}" ]]; then
 		rm "${WarrantyTempFile}"
 	fi
 fi
@@ -307,7 +316,7 @@ FixDateYYYYMMDD()
 # Get output options: csv, plist
 # You should be exporting this to a static place you can pull reports from.
 
-while getopts s:b:o:f:n:dh opt; do
+while getopts s:b:o:f:n:dvh opt; do
 	case "$opt" in
 		s) SerialNumber="$OPTARG";;
 		b) SerialCSV="$OPTARG";;
@@ -315,6 +324,7 @@ while getopts s:b:o:f:n:dh opt; do
 		f) Format="$OPTARG";;
 		n) OutputName="$OPTARG";;
 		d) FixDate=1;;
+		v) VERBOSE=1;;
 		h) help
 			exit 0;;
 		\?)
