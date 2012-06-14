@@ -12,6 +12,7 @@
 # Days since DOP and Days remaining added by n8felton (02/09/2012)
 # SPX output format added by n8felton (02/27/2012)
 #
+
 # Edited 2012/02/27
 # Edited 2012/05/11
 # Adding iPhone Support
@@ -23,6 +24,7 @@
 # Edited 2012/10/31
 # Updating script to work with new URL
 
+
 ###############
 ##  GLOBALS  ##
 ###############
@@ -32,11 +34,11 @@ WarrantyTempFile="/tmp/warranty.$(date +%s).txt"
 ModelTempFile="/tmp/model.$(date +%s).txt"
 AsdCheck="/tmp/asdcheck.$(date +%s).txt"
 PlistBuddy="/usr/libexec/PlistBuddy"
-Output="."
+Output="/Library/Sysman/"
 CSVOutput="warranty.csv"
-PlistOutput="warranty.plist"
+PlistOutput="PSUWarranty.plist"
 SPXOutput="warranty.spx"
-Format="stdout"
+Format="plist"
 Version="6"
 DEBUGG=		# Set to 1 to enable debugging ( Don't delete temp files ), Leave BLANK to disable
 VERBOSE=	# Set to 1 to enable bulk editing verboseness, Leave BLANK to disable
@@ -370,6 +372,7 @@ if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 	if [ "${VERBOSE}" ]; then 
 		echo "Scanning file for specified fields."
 	fi
+<<<<<<< HEAD
 	# PurchaseDate=$(GetWarrantyValue PURCHASE_DATE) ## Apple Removed from warranty site
 # curl "https://selfsolve.apple.com/wcResults.do?sn=C02FG7QGDH2H&Continue=Continue&num=0"|grep HWSupportInfo|grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $2}'|awk '{print $4,$5,$6}'
 # https://selfsolve.apple.com/agreementWarrantyDynamic.do?sn=QP8500M0ZE6
@@ -383,6 +386,14 @@ if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 	# If the HW_END_DATE is found, fix the date formate. Otherwise set it to the WarrantyStatus.
 	if [[ -n "$WarrantyExpires" ]]; then
 		WarrantyExpires=$(GetWarrantyExp|/bin/date -jf "%B %d, %Y" "${WarrantyExpires}" +"%Y-%m-%d") > /dev/null 2>&1 ## corrects Apple's change to "Month Day, Year" format for HW_END_DATE	
+=======
+	PurchaseDate=$(GetWarrantyValue PURCHASE_DATE)
+	PurchaseDate=$(/bin/date -jf "%Y-%m-%d" "${PurchaseDate}" +"%m/%d/%Y") # Change date format.
+	WarrantyStatus=$(GetWarrantyValue HW_SUPPORT_COV_SHORT)
+	WarrantyExpires=$(GetWarrantyValue HW_END_DATE)
+	if [[ -n "$WarrantyExpires" ]]; then
+		WarrantyExpires=$(GetWarrantyValue HW_END_DATE|/bin/date -jf "%B %d, %Y" "${WarrantyExpires}" +"%m/%d/%Y") > /dev/null 2>&1 ## corrects Apple's change to "Month Day, Year" format for HW_END_DATE	
+>>>>>>> Initial TEM commit
 	else
 		WarrantyExpires="${WarrantyStatus}"
 	fi
