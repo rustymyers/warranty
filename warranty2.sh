@@ -13,10 +13,11 @@
 # SPX output format added by n8felton (02/27/2012)
 #
 # Last Edited 02/27/2012
-# Last Edited 2012/05/11
+# Last Edited 05/11/2012
 # Adding iPhone Support
 # Fixing debugg and verbose flags
-# 
+# Last Edited 06/14/2012
+# Updating code for TEM Server at PSU
 
 ###############
 ##  GLOBALS  ##
@@ -26,12 +27,12 @@
 WarrantyTempFile="/tmp/warranty.$(date +%s).txt"
 AsdCheck="/tmp/asdcheck.$(date +%s).txt"
 PlistBuddy="/usr/libexec/PlistBuddy"
-Output="."
+Output="/Library/Sysman/"
 CSVOutput="warranty.csv"
-PlistOutput="warranty.plist"
+PlistOutput="PSUWarranty.plist"
 SPXOutput="warranty.spx"
-Format="stdout"
-Version="5"
+Format="plist"
+Version="5.1"
 DEBUGG=		# Set to 1 to enable debugging ( Don't delete temp files )
 VERBOSE=	# Set to 1 to enable bulk editing verboseness
 
@@ -346,10 +347,11 @@ if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 		echo "Scanning file for specified fields."
 	fi
 	PurchaseDate=$(GetWarrantyValue PURCHASE_DATE)
+	PurchaseDate=$(/bin/date -jf "%Y-%m-%d" "${PurchaseDate}" +"%m/%d/%Y") # Change date format.
 	WarrantyStatus=$(GetWarrantyValue HW_SUPPORT_COV_SHORT)
 	WarrantyExpires=$(GetWarrantyValue HW_END_DATE)
 	if [[ -n "$WarrantyExpires" ]]; then
-		WarrantyExpires=$(GetWarrantyValue HW_END_DATE|/bin/date -jf "%B %d, %Y" "${WarrantyExpires}" +"%Y-%m-%d") > /dev/null 2>&1 ## corrects Apple's change to "Month Day, Year" format for HW_END_DATE	
+		WarrantyExpires=$(GetWarrantyValue HW_END_DATE|/bin/date -jf "%B %d, %Y" "${WarrantyExpires}" +"%m/%d/%Y") > /dev/null 2>&1 ## corrects Apple's change to "Month Day, Year" format for HW_END_DATE	
 	else
 		WarrantyExpires="${WarrantyStatus}"
 	fi
