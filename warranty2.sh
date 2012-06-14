@@ -27,7 +27,7 @@
 WarrantyTempFile="/tmp/warranty.$(date +%s).txt"
 AsdCheck="/tmp/asdcheck.$(date +%s).txt"
 PlistBuddy="/usr/libexec/PlistBuddy"
-Output="/Library/Sysman/"
+Output="/Library/Sysman" # No Trailing Slash
 CSVOutput="warranty.csv"
 PlistOutput="PSUWarranty.plist"
 SPXOutput="warranty.spx"
@@ -450,6 +450,10 @@ while getopts s:b:o:f:n:dvkh opt; do
 done
 shift $(expr $OPTIND - 1)
 
+# Make output dir if specified
+if [ "${Output}" ]; then
+	mkdir -p "${Output}"
+fi
 
 ## Add Timeout so this curl doesn't try forever when GitHub raw is down. Cache a local copy? Try alternate forks?
 ## Fail to unknown ASD after 5 seconds? Don't take too long, you'll get the numbers eventually. 
