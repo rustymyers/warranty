@@ -164,7 +164,9 @@ outputPlist() {
 	
 	if [[ ! -e "${PlistLocal}" ]]; then
 		AddPlistString warrantyscriptversion "${Version}" "${PlistLocal}" > /dev/null 2>&1
-		for i in purchasedate warrantyexpires warrantystatus modeltype asd serialnumber currentdate daysremaining dayssincedop isaniphone iphonecarrier partdescript
+		for i in  warrantyexpires warrantystatus modeltype asd serialnumber currentdate isaniphone iphonecarrier partdescript
+		# for i in purchasedate warrantyexpires warrantystatus modeltype asd serialnumber currentdate daysremaining dayssincedop isaniphone iphonecarrier partdescript ## Apple Removed fields from warranty site
+
 		do
 		AddPlistString $i unknown "${PlistLocal}"
 		done
@@ -175,13 +177,13 @@ outputPlist() {
 	fi
 	
 	SetPlistString serialnumber "${SerialNumber}" "${PlistLocal}"
-	SetPlistString purchasedate "${PurchaseDate}" "${PlistLocal}"
+# 	SetPlistString purchasedate "${PurchaseDate}" "${PlistLocal}" ## Apple Removed from warranty site
 	SetPlistString warrantyexpires "${WarrantyExpires}" "${PlistLocal}"
 	SetPlistString warrantystatus "${WarrantyStatus}" "${PlistLocal}"
 	SetPlistString modeltype "${ModelType}" "${PlistLocal}"
 	SetPlistString asd "${AsdVers}" "${PlistLocal}"
-	SetPlistString daysremaining "${DaysRemaining}" "${PlistLocal}"
-	SetPlistString dayssincedop "${DaysSinceDOP}" "${PlistLocal}"
+# 	SetPlistString daysremaining "${DaysRemaining}" "${PlistLocal}" ## Apple Removed from warranty site
+# 	SetPlistString dayssincedop "${DaysSinceDOP}" "${PlistLocal}" ## Apple Removed from warranty site
 	SetPlistString currentdate $(date "+%m/%d/%Y") "${PlistLocal}"
 	SetPlistString isaniphone "${IsAniPhone}" "${PlistLocal}"
 	SetPlistString iphonecarrier "${iPhoneCarrier}" "${PlistLocal}"
@@ -197,10 +199,12 @@ outputCSV() {
 	if [ "${VERBOSE}" ]; then 
 		echo "Creating csv output"
 	fi
-	# Serial#, PurchaseDate, DaysSinceDOP, WarrantyExpires, DaysRemaining, WarrantyStatus, ModelType, AsdVers
+	
+	# CSV Headers
+	# "SerialNumber, WarrantyExpires, WarrantyStatus, FixModel, AsdVers, IsAniPhone, iPhoneCarrier, PartDescript" 
 	FixModel=$(echo ${ModelType} |tr -d ',')
-#	echo "${SerialNumber}, ${PurchaseDate}, ${DaysSinceDOP}, ${WarrantyExpires}, ${DaysRemaining}, ${WarrantyStatus}, ${FixModel}, ${AsdVers}, ${IsAniPhone}, ${iPhoneCarrier}, ${PartDescript}" >> "${Output}/${CSVOutput}"
-	echo "${SerialNumber}, ${PurchaseDate}, ${DaysSinceDOP}, ${WarrantyExpires}, ${DaysRemaining}, ${WarrantyStatus}, ${FixModel}, ${AsdVers}, ${IsAniPhone}, ${iPhoneCarrier}, ${PartDescript}" >> "${Output}/${CSVOutput}"
+#	echo "${SerialNumber}, ${PurchaseDate}, ${DaysSinceDOP}, ${WarrantyExpires}, ${DaysRemaining}, ${WarrantyStatus}, ${FixModel}, ${AsdVers}, ${IsAniPhone}, ${iPhoneCarrier}, ${PartDescript}" >> "${Output}/${CSVOutput}" ## Apple Removed fields from warranty site
+	echo "${SerialNumber}, ${WarrantyExpires}, ${WarrantyStatus}, ${FixModel}, ${AsdVers}, ${IsAniPhone}, ${iPhoneCarrier}, ${PartDescript}" >> "${Output}/${CSVOutput}"
 	
 }
 
@@ -224,10 +228,10 @@ outputDSProperties() {
 	#Write data to DeployStudio Properties
 	echo "RuntimeSetCustomProperty: SERIAL_NUMBER=${SerialNumber}"
 	# //-/ removes the dashes from the Purchase date.  Useful for conditional statements.
-	echo "RuntimeSetCustomProperty: PURCHASE_DATE=${PurchaseDate//-/}"
-	echo "RuntimeSetCustomProperty: DAYS_SINCE_DOP=${DaysSinceDOP}"	
+# 	echo "RuntimeSetCustomProperty: PURCHASE_DATE=${PurchaseDate//-/}" ## Apple Removed from warranty site
+# 	echo "RuntimeSetCustomProperty: DAYS_SINCE_DOP=${DaysSinceDOP}"	## Apple Removed from warranty site
 	echo "RuntimeSetCustomProperty: WARRANTY_EXPIRES=${WarrantyExpires}"
-	echo "RuntimeSetCustomProperty: DAYS_REMAINING=${DaysRemaining}"
+# 	echo "RuntimeSetCustomProperty: DAYS_REMAINING=${DaysRemaining}" ## Apple Removed from warranty site
 	echo "RuntimeSetCustomProperty: WARRANTY_STATUS=${WarrantyStatus}"
 	echo "RuntimeSetCustomProperty: MODEL_TYPE=${ModelType}"
 	echo "RuntimeSetCustomProperty: ASD=${AsdVers}"
@@ -266,7 +270,7 @@ EOF
 	${PlistBuddy} -c "Add 0:_items:0:_name string Warranty" ${SPXOutput}
 	${PlistBuddy} -c "Add 0:_items:0:Model string ${ModelType}" ${SPXOutput}
 	${PlistBuddy} -c "Add 0:_items:0:Serial\ Number string ${SerialNumber}" ${SPXOutput}
-	${PlistBuddy} -c "Add 0:_items:0:Purchase\ Date string ${PurchaseDate}" ${SPXOutput}
+# 	${PlistBuddy} -c "Add 0:_items:0:Purchase\ Date string ${PurchaseDate}" ${SPXOutput} ## Apple Removed from warranty site
 	${PlistBuddy} -c "Add 0:_items:0:Warranty\ Expires string ${WarrantyExpires}" ${SPXOutput}
 	${PlistBuddy} -c "Add 0:_items:0:Warranty\ Status string ${WarrantyStatus}" ${SPXOutput}
 	${PlistBuddy} -c "Add 0:_items:0:ASD string ${AsdVers}" ${SPXOutput}
@@ -297,7 +301,8 @@ fi
 if [ "${VERBOSE}" ]; then 
 	echo "Adding CSV headers."
 fi
-echo "SerialNumber, PurchaseDate, DaysSinceDOP, WarrantyExpires, DaysRemaining, WarrantyStatus, FixModel, AsdVers, IsAniPhone, iPhoneCarrier, PartDescript" >> "${Output}/${CSVOutput}"
+echo "SerialNumber, WarrantyExpires, WarrantyStatus, FixModel, AsdVers, IsAniPhone, iPhoneCarrier, PartDescript" >> "${Output}/${CSVOutput}"
+# echo "SerialNumber, PurchaseDate, DaysSinceDOP, WarrantyExpires, DaysRemaining, WarrantyStatus, FixModel, AsdVers, IsAniPhone, iPhoneCarrier, PartDescript" >> "${Output}/${CSVOutput}" ## Apple Removed from warranty site
 
 for i in $(cat "${1}"); do
 
