@@ -368,7 +368,6 @@ if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 		WarrantyExpires="${WarrantyStatus}"
 	fi
 	ModelType=$(GetModelValue PROD_DESCR)
-	echo "$ModelType - Test"
 	# HW_COVERAGE_DESC
 	
 	# Remove the "OSB" from the beginning of ModelType
