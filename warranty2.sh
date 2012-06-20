@@ -16,7 +16,8 @@
 # Last Edited 2012/05/11
 # Adding iPhone Support
 # Fixing debugg and verbose flags
-# 
+# Last Edited 2012/06/20
+# Apple's update to the warranty site removed a few of the keys we pulled.
 
 ###############
 ##  GLOBALS  ##
@@ -31,7 +32,7 @@ CSVOutput="warranty.csv"
 PlistOutput="warranty.plist"
 SPXOutput="warranty.spx"
 Format="stdout"
-Version="5"
+Version="5.2"
 DEBUGG=		# Set to 1 to enable debugging ( Don't delete temp files )
 VERBOSE=	# Set to 1 to enable bulk editing verboseness
 
@@ -198,6 +199,7 @@ outputCSV() {
 	fi
 	# Serial#, PurchaseDate, DaysSinceDOP, WarrantyExpires, DaysRemaining, WarrantyStatus, ModelType, AsdVers
 	FixModel=$(echo ${ModelType} |tr -d ',')
+#	echo "${SerialNumber}, ${PurchaseDate}, ${DaysSinceDOP}, ${WarrantyExpires}, ${DaysRemaining}, ${WarrantyStatus}, ${FixModel}, ${AsdVers}, ${IsAniPhone}, ${iPhoneCarrier}, ${PartDescript}" >> "${Output}/${CSVOutput}"
 	echo "${SerialNumber}, ${PurchaseDate}, ${DaysSinceDOP}, ${WarrantyExpires}, ${DaysRemaining}, ${WarrantyStatus}, ${FixModel}, ${AsdVers}, ${IsAniPhone}, ${iPhoneCarrier}, ${PartDescript}" >> "${Output}/${CSVOutput}"
 	
 }
@@ -206,10 +208,10 @@ outputSTDOUT() {
 	# Write data to STDOUT
 	echo "$(date) ... Checking warranty status"
 	echo "Serial Number       ==  ${SerialNumber}"
-	echo "PurchaseDate        ==  ${PurchaseDate}"
-	echo "Days Since Purchase ==  ${DaysSinceDOP}"
+	# echo "PurchaseDate        ==  ${PurchaseDate}"
+	# echo "Days Since Purchase ==  ${DaysSinceDOP}"
 	echo "WarrantyExpires     ==  ${WarrantyExpires}"
-	echo "Days Remaining      ==  ${DaysRemaining}"
+	# echo "Days Remaining      ==  ${DaysRemaining}"
 	echo "WarrantyStatus      ==  ${WarrantyStatus}"
 	echo "ModelType           ==  ${ModelType}"
 	echo "ASD                 ==  ${AsdVers}"
@@ -345,28 +347,32 @@ if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 	if [ "${VERBOSE}" ]; then 
 		echo "Scanning file for specified fields."
 	fi
-	PurchaseDate=$(GetWarrantyValue PURCHASE_DATE)
+	# PurchaseDate=$(GetWarrantyValue PURCHASE_DATE) ## Apple Removed from warranty site
 	WarrantyStatus=$(GetWarrantyValue HW_SUPPORT_COV_SHORT)
-	WarrantyExpires=$(GetWarrantyValue HW_END_DATE)
+	WarrantyExpires=$(GetWarrantyValue HW_END_DATE) #| /bin/date -jf "%B %d, %Y" "${WarrantyExpires}" +"%Y-%m-%d")
+	# If the HW_END_DATE is found, fix the date formate. Otherwise set it to the WarrantyStatus.
 	if [[ -n "$WarrantyExpires" ]]; then
 		WarrantyExpires=$(GetWarrantyValue HW_END_DATE|/bin/date -jf "%B %d, %Y" "${WarrantyExpires}" +"%Y-%m-%d") > /dev/null 2>&1 ## corrects Apple's change to "Month Day, Year" format for HW_END_DATE	
 	else
 		WarrantyExpires="${WarrantyStatus}"
 	fi
-	ModelType=$(GetModelValue PROD_DESC)
+	ModelType=$(GetModelValue PROD_DESCR)
+	echo "$ModelType - Test"
 	# HW_COVERAGE_DESC
 	
 	# Remove the "OSB" from the beginning of ModelType
 	if [[ $(echo ${ModelType}|grep 'OBS') ]]; 
 		then ModelType=$(echo ${ModelType}|sed s/"OBS,"//)
 	fi
+	
+	# Retrieve ASD version based on ModelType
 	AsdVers=$(GetAsdVers "${ModelType}")
 	
 	#Days since purchase
-	DaysSinceDOP=$(GetWarrantyValue NUM_DAYS_SINCE_DOP)
+	#DaysSinceDOP=$(GetWarrantyValue NUM_DAYS_SINCE_DOP) ## Apple Removed from warranty site
 	
 	#Days remaining
-	DaysRemaining=$(GetWarrantyValue DAYS_REM_IN_COV)
+	#DaysRemaining=$(GetWarrantyValue DAYS_REM_IN_COV) ## Apple Removed from warranty site
 	
 	#Is serial an iPhone?
 	IsAniPhone=$(GetWarrantyValue IS_IPHONE)
@@ -376,6 +382,9 @@ if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 	
 	#iPhone Part Description
 	PartDescript=$(GetWarrantyValue PART_DESCR)
+	
+	# Hardware Support Link
+	#HWSupport=$(GetWarrantyValue HW_SUPPORT_LINK)
 	
 	if [ "${VERBOSE}" ]; then 
 		echo "All Fields Found."
