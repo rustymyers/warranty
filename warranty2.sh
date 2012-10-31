@@ -370,13 +370,6 @@ if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 	if [ "${VERBOSE}" ]; then 
 		echo "Scanning file for specified fields."
 	fi
-	# PurchaseDate=$(GetWarrantyValue PURCHASE_DATE) ## Apple Removed from warranty site
-# curl "https://selfsolve.apple.com/wcResults.do?sn=C02FG7QGDH2H&Continue=Continue&num=0"|grep HWSupportInfo|grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $2}'|awk '{print $4,$5,$6}'
-# https://selfsolve.apple.com/agreementWarrantyDynamic.do?sn=QP8500M0ZE6
-
-# Warranty Expiration Date:
-# grep HWSupportInfo /tmp/warranty.1351690782.txt |grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $2}'|awk '{print $4,$5,$6}'
-
 
 	WarrantyStatus=$(GetWarrantyStatus)
 	WarrantyExpires=$(GetWarrantyExp)
@@ -495,10 +488,6 @@ FixDateYYYYMMDD()
 ###################
 ##  APPLICATION  ##
 ###################
-
-# Get serial number, csv file
-# Get output options: csv, plist
-# You should be exporting this to a static place you can pull reports from.
 
 while getopts s:b:o:f:n:dvkh opt; do
 	case "$opt" in
