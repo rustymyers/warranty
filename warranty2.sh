@@ -49,10 +49,10 @@ cat<<EOF
 
 Input:
 	no flags = use this computers serial
-	-b = loop through BULK csv file
+	-b = [path to file] = loop through BULK csv file
 		 processing a csv file will only output to a 
 		 csv file. other output formats will be ignored
-	-s = specify SERIAL number
+	-s = [serial number] = specify SERIAL number
 
 Output:
 	-f [csv|plist|spx|DSProperties] = FORMAT output file to csv, plist, spx, or DeployStudio format.
@@ -63,6 +63,7 @@ Output:
 
 Defaults:
 	WarrantyTempFile="${WarrantyTempFile}"
+	ModelTempFile="${ModelTempFile}"
 	AsdCheck="${AsdCheck}"
 	Output="${Output}"
 	Format="${Format}"
@@ -87,11 +88,13 @@ Examples:
 	http://www.deploystudio.com/News/Entries/2011/7/20_DeployStudio_Server_1.0rc128.html
 	$0 -f DSProperties
 	
-	Generate a system profile report to opene and/or merged with another report.
+	Generate a system profile report to open and/or merged with another report.
 	$0 -f spx
-	
-	/usr/sbin/system_profiler -xml > firstreport.spx
-	${PlistBuddy} -c "Merge warranty.spx" firstreport.spx
+	After generating a warranty SPX file, add it to a full system profiler report with these commands:
+		A) Generate System Profiler Report
+			/usr/sbin/system_profiler -xml > firstreport.spx
+		B) Merge "warranty.spx" file with "firstreport.spx"
+			${PlistBuddy} -c "Merge warranty.spx" firstreport.spx
 
 
 EOF
@@ -118,6 +121,7 @@ Output:
 
 Defaults:
 	WarrantyTempFile="${WarrantyTempFile}"
+	ModelTempFile="${ModelTempFile}"
 	AsdCheck="${AsdCheck}"
 	Output="${Output}"
 	Format="${Format}"
@@ -184,7 +188,7 @@ outputPlist() {
 	
 	if [[ ! -e "${PlistLocal}" ]]; then
 		AddPlistString warrantyscriptversion "${Version}" "${PlistLocal}" > /dev/null 2>&1
-		for i in  warrantyexpires warrantystatus modeltype asd serialnumber currentdate isaniphone iphonecarrier partdescript
+		for i in  warrantyexpires warrantystatus modeltype asd serialnumber currentdate #isaniphone iphonecarrier partdescript
 		# for i in purchasedate warrantyexpires warrantystatus modeltype asd serialnumber currentdate daysremaining dayssincedop isaniphone iphonecarrier partdescript ## Apple Removed fields from warranty site
 
 		do
@@ -205,9 +209,9 @@ outputPlist() {
 # 	SetPlistString daysremaining "${DaysRemaining}" "${PlistLocal}" ## Apple Removed from warranty site
 # 	SetPlistString dayssincedop "${DaysSinceDOP}" "${PlistLocal}" ## Apple Removed from warranty site
 	SetPlistString currentdate $(date "+%m/%d/%Y") "${PlistLocal}"
-	SetPlistString isaniphone "${IsAniPhone}" "${PlistLocal}"
-	SetPlistString iphonecarrier "${iPhoneCarrier}" "${PlistLocal}"
-	SetPlistString partdescript "${PartDescript}" "${PlistLocal}"
+	#SetPlistString isaniphone "${IsAniPhone}" "${PlistLocal}"
+	#SetPlistString iphonecarrier "${iPhoneCarrier}" "${PlistLocal}"
+	#SetPlistString partdescript "${PartDescript}" "${PlistLocal}"
 	
 	if [ "${VERBOSE}" ]; then 
 		echo "All fields added"
@@ -255,9 +259,9 @@ outputDSProperties() {
 	echo "RuntimeSetCustomProperty: WARRANTY_STATUS=${WarrantyStatus}"
 	echo "RuntimeSetCustomProperty: MODEL_TYPE=${ModelType}"
 	echo "RuntimeSetCustomProperty: ASD=${AsdVers}"
-	echo "RuntimeSetCustomProperty: IsAniPhone=${IsAniPhone}"
-	echo "RuntimeSetCustomProperty: iPhoneCarrier=${iPhoneCarrier}"
-	echo "RuntimeSetCustomProperty: PartDescript=${PartDescript}"
+#	echo "RuntimeSetCustomProperty: IsAniPhone=${IsAniPhone}"
+#	echo "RuntimeSetCustomProperty: iPhoneCarrier=${iPhoneCarrier}"
+#	echo "RuntimeSetCustomProperty: PartDescript=${PartDescript}"
 	#A timestamp of the last time the information was polled for the "Days" information
 	echo "RuntimeSetCustomProperty: LAST_POLL=$(date +%Y-%m-%d)"	
 }
@@ -294,18 +298,18 @@ EOF
 	${PlistBuddy} -c "Add 0:_items:0:Warranty\ Expires string ${WarrantyExpires}" ${SPXOutput}
 	${PlistBuddy} -c "Add 0:_items:0:Warranty\ Status string ${WarrantyStatus}" ${SPXOutput}
 	${PlistBuddy} -c "Add 0:_items:0:ASD string ${AsdVers}" ${SPXOutput}
-	${PlistBuddy} -c "Add 0:_items:0:IsAniPhone string ${IsAniPhone}" ${SPXOutput}
-	${PlistBuddy} -c "Add 0:_items:0:iPhoneCarrier string ${iPhoneCarrier}" ${SPXOutput}
-	${PlistBuddy} -c "Add 0:_items:0:PartDescript string ${PartDescript}" ${SPXOutput}	
+#	${PlistBuddy} -c "Add 0:_items:0:IsAniPhone string ${IsAniPhone}" ${SPXOutput}
+#	${PlistBuddy} -c "Add 0:_items:0:iPhoneCarrier string ${iPhoneCarrier}" ${SPXOutput}
+#	${PlistBuddy} -c "Add 0:_items:0:PartDescript string ${PartDescript}" ${SPXOutput}	
 	${PlistBuddy} -c "Add 0:_properties:Model:_order string 1" ${SPXOutput}
 	${PlistBuddy} -c "Add 0:_properties:Serial\ Number:_order string 2" ${SPXOutput}
 	${PlistBuddy} -c "Add 0:_properties:Purchase\ Date:_order string 3" ${SPXOutput}
 	${PlistBuddy} -c "Add 0:_properties:Warranty\ Expires:_order string 4" ${SPXOutput}
 	${PlistBuddy} -c "Add 0:_properties:Warranty\ Status:_order string 5" ${SPXOutput}
 	${PlistBuddy} -c "Add 0:_properties:ASD:_order string 6" ${SPXOutput}
-	${PlistBuddy} -c "Add 0:_properties:IsAniPhone:_order string 7" ${SPXOutput}
-	${PlistBuddy} -c "Add 0:_properties:iPhoneCarrier:_order string 8" ${SPXOutput}
-	${PlistBuddy} -c "Add 0:_properties:PartDescript:_order string 9" ${SPXOutput}
+#	${PlistBuddy} -c "Add 0:_properties:IsAniPhone:_order string 7" ${SPXOutput}
+#	${PlistBuddy} -c "Add 0:_properties:iPhoneCarrier:_order string 8" ${SPXOutput}
+#	${PlistBuddy} -c "Add 0:_properties:PartDescript:_order string 9" ${SPXOutput}
 
 	if [ "${VERBOSE}" ]; then 
 		echo "Added All Fields to SPX file."
@@ -321,7 +325,7 @@ fi
 if [ "${VERBOSE}" ]; then 
 	echo "Adding CSV headers."
 fi
-echo "SerialNumber, WarrantyExpires, WarrantyStatus, FixModel, AsdVers, IsAniPhone, iPhoneCarrier, PartDescript" >> "${Output}/${CSVOutput}"
+echo "SerialNumber, WarrantyExpires, WarrantyStatus, ModelName, AsdVers, IsAniPhone, iPhoneCarrier, PartDescript" >> "${Output}/${CSVOutput}"
 # echo "SerialNumber, PurchaseDate, DaysSinceDOP, WarrantyExpires, DaysRemaining, WarrantyStatus, FixModel, AsdVers, IsAniPhone, iPhoneCarrier, PartDescript" >> "${Output}/${CSVOutput}" ## Apple Removed from warranty site
 
 for i in $(cat "${1}"); do
@@ -474,7 +478,7 @@ case $Format in
 	if [ "${VERBOSE}" ]; then 
 	echo "Adding CSV Headers."
 	fi
-	echo "SerialNumber, PurchaseDate, DaysSinceDOP, WarrantyExpires, DaysRemaining, WarrantyStatus, FixModel, AsdVers, IsAniPhone, iPhoneCarrier, PartDescript" >> "${Output}/${CSVOutput}"
+	echo "SerialNumber, PurchaseDate, DaysSinceDOP, WarrantyExpires, DaysRemaining, WarrantyStatus, ModelName, AsdVers, IsAniPhone, iPhoneCarrier, PartDescript" >> "${Output}/${CSVOutput}"
 	outputCSV
 	;;
 	plist)
