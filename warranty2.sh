@@ -12,14 +12,16 @@
 # Days since DOP and Days remaining added by n8felton (02/09/2012)
 # SPX output format added by n8felton (02/27/2012)
 #
-# Last Edited 02/27/2012
-# Last Edited 2012/05/11
+# Edited 2012/02/27
+# Edited 2012/05/11
 # Adding iPhone Support
 # Fixing debugg and verbose flags
-# Last Edited 2012/06/20
+# Edited 2012/06/20
 # Apple's update to the warranty site removed a few of the keys we pulled.
 # Get model from Apple site? last 4 digits of a 12 digit serial number, last 3 digits of an 11 digit serial number
 ## http://support-sp.apple.com/sp/product?cc=DH2H&lang=en_US
+# Edited 2012/10/31
+# Updating script to work with new URL
 
 ###############
 ##  GLOBALS  ##
@@ -35,7 +37,7 @@ CSVOutput="warranty.csv"
 PlistOutput="warranty.plist"
 SPXOutput="warranty.spx"
 Format="stdout"
-Version="5.2"
+Version="6"
 DEBUGG=		# Set to 1 to enable debugging ( Don't delete temp files ), Leave BLANK to disable
 VERBOSE=	# Set to 1 to enable bulk editing verboseness, Leave BLANK to disable
 
@@ -119,12 +121,6 @@ Output:
 	-k = Enable debugging (Don't delete temp files)
 	-h = Full help page (With Examples!)
 
-Defaults:
-	WarrantyTempFile="${WarrantyTempFile}"
-	ModelTempFile="${ModelTempFile}"
-	AsdCheck="${AsdCheck}"
-	Output="${Output}"
-	Format="${Format}"
 EOF
 }
 
@@ -344,18 +340,13 @@ done
 
 checkStatus() {
 
-#WarrantyURL="https://selfsolve.apple.com/warrantyChecker.do?sn=${SerialNumber}&country=USA"
 WarrantyURL="https://selfsolve.apple.com/wcResults.do?sn=${SerialNumber}&Continue=Continue&num=0"
-
-#https://selfsolve.apple.com/wcResults.do?sn=C02FG7QGDH2H&Continue=Continue&num=0
 
 if [ "${VERBOSE}" ]; then 
 	echo "Checking Serial: ${SerialNumber} Warranty Status from URL ${WarrantyURL}"
 fi
 
 [[ -n "${SerialNumber}" ]] && WarrantyInfo=$(curl -k -s $WarrantyURL | awk '{gsub(/\",\"/,"\n");print}' | awk '{gsub(/\":\"/,":");print}' | sed s/\"\}\)// > ${WarrantyTempFile})
-
-#cat ${WarrantyTempFile}
 
 InvalidSerial=$(grep 'invalidserialnumber\|productdoesnotexist' "${WarrantyTempFile}")
 
