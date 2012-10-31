@@ -25,7 +25,6 @@
 # Updating script to work with new URL
 
 
-
 ###############
 ##  GLOBALS  ##
 ###############
@@ -43,6 +42,7 @@ Format="plist"
 Version="6"
 DEBUGG=		# Set to 1 to enable debugging ( Don't delete temp files ), Leave BLANK to disable
 VERBOSE=	# Set to 1 to enable bulk editing verboseness, Leave BLANK to disable
+
 
 #################
 ##  FUNCTIONS  ##
@@ -415,6 +415,7 @@ if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 	
 	# Set Model Type from Model temp file
 	ModelType=$(GetModelName)
+
 	
 	# Remove the "OSB" from the beginning of ModelType
 	if [[ $(echo ${ModelType}|grep 'OBS') ]]; 
