@@ -18,6 +18,8 @@
 # Fixing debugg and verbose flags
 # Last Edited 2012/06/20
 # Apple's update to the warranty site removed a few of the keys we pulled.
+# Get model from Apple site? last 4 digits of a 12 digit serial number, last 3 digits of an 11 digit serial number
+## http://support-sp.apple.com/sp/product?cc=DH2H&lang=en_US
 
 ###############
 ##  GLOBALS  ##
@@ -33,8 +35,8 @@ PlistOutput="warranty.plist"
 SPXOutput="warranty.spx"
 Format="stdout"
 Version="5.2"
-DEBUGG=		# Set to 1 to enable debugging ( Don't delete temp files )
-VERBOSE=	# Set to 1 to enable bulk editing verboseness
+DEBUGG=1		# Set to 1 to enable debugging ( Don't delete temp files )
+VERBOSE=1	# Set to 1 to enable bulk editing verboseness
 
 #################
 ##  FUNCTIONS  ##
@@ -320,7 +322,10 @@ done
 
 checkStatus() {
 
-WarrantyURL="https://selfsolve.apple.com/warrantyChecker.do?sn=${SerialNumber}&country=USA"
+#WarrantyURL="https://selfsolve.apple.com/warrantyChecker.do?sn=${SerialNumber}&country=USA"
+WarrantyURL="https://selfsolve.apple.com/wcResults.do?sn=${SerialNumber}&Continue=Continue&num=0"
+
+#https://selfsolve.apple.com/wcResults.do?sn=C02FG7QGDH2H&Continue=Continue&num=0
 
 if [ "${VERBOSE}" ]; then 
 	echo "Checking Serial: ${SerialNumber} Warranty Status from URL ${WarrantyURL}"
@@ -353,6 +358,9 @@ if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 		echo "Scanning file for specified fields."
 	fi
 	# PurchaseDate=$(GetWarrantyValue PURCHASE_DATE) ## Apple Removed from warranty site
+# curl "https://selfsolve.apple.com/wcResults.do?sn=C02FG7QGDH2H&Continue=Continue&num=0"|grep HWSupportInfo|grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $2}'|awk '{print $4,$5,$6}'
+# https://selfsolve.apple.com/agreementWarrantyDynamic.do?sn=QP8500M0ZE6
+
 	WarrantyStatus=$(GetWarrantyValue HW_SUPPORT_COV_SHORT)
 	WarrantyExpires=$(GetWarrantyValue HW_END_DATE) #| /bin/date -jf "%B %d, %Y" "${WarrantyExpires}" +"%Y-%m-%d")
 	# If the HW_END_DATE is found, fix the date formate. Otherwise set it to the WarrantyStatus.
