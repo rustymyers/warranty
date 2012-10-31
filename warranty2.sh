@@ -377,11 +377,11 @@ if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 	# PurchaseDate=$(GetWarrantyValue PURCHASE_DATE) ## Apple Removed from warranty site
 	# PurchaseDate=$(/bin/date -jf "%Y-%m-%d" "${PurchaseDate}" +"%m/%d/%Y") # Change date format.
 
-	WarrantyStatus=$(GetWarrantyValue HW_SUPPORT_COV_SHORT)
-	WarrantyExpires=$(GetWarrantyValue HW_END_DATE) #| /bin/date -jf "%B %d, %Y" "${WarrantyExpires}" +"%Y-%m-%d")
+	WarrantyStatus=$(GetWarrantyStatus)
+	WarrantyExpires=$(GetWarrantyExp)
 	# If the HW_END_DATE is found, fix the date formate. Otherwise set it to the WarrantyStatus.
 	if [[ -n "$WarrantyExpires" ]]; then
-		WarrantyExpires=$(GetWarrantyValue HW_END_DATE|/bin/date -jf "%B %d, %Y" "${WarrantyExpires}" +"%m/%d/%Y") > /dev/null 2>&1 ## corrects Apple's change to "Month Day, Year" format for HW_END_DATE	
+		WarrantyExpires=$(GetWarrantyExp|/bin/date -jf "%B %d, %Y" "${WarrantyExpires}" +"%Y-%m-%d") > /dev/null 2>&1 ## corrects Apple's change to "Month Day, Year" format for HW_END_DATE	
 	else
 		WarrantyExpires="${WarrantyStatus}"
 	fi
