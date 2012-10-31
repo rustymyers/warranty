@@ -144,11 +144,16 @@ GetWarrantyValue()
 }
 GetWarrantyExp()
 {
-	grep HWSupportInfo "${WarrantyTempFile}" |grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $2}'|awk '{print $4,$5,$6}'
+	grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $2}'|awk '{print $4,$5,$6}'
 }
 GetWarrantyStatus()
 {
-	grep displayEligibilityInfo "${WarrantyTempFile}" |awk -F, '{print $3}'|cut -d \' -f 2
+	WarrStatus=$(grep displayEligibilityInfo "${WarrantyTempFile}" |awk -F, '{print $3}'|cut -d \' -f 2)
+	if [[ -z ${WarrStatus} ]]; then
+		echo "Out Of Warranty"
+	else
+		echo ${WarrStatus}
+	fi
 }
 GetModelName()
 {
