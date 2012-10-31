@@ -21,7 +21,7 @@ Description:
 
 Known Issue:
 
-	None	
+	Apple recently updated the URL, reworking the code to accomodate...	
 
 Usage:
 
@@ -52,8 +52,9 @@ Usage:
 
 	Defaults:
 
-		WarrantyTempFile="/tmp/warranty.txt"
-		AsdCheck="/tmp/asdcheck.txt"
+		WarrantyTempFile="/tmp/warranty.DATE.txt"
+		ModelTempFile="/tmp/model.DATE.txt"
+		AsdCheck="/tmp/asdcheck.DATE.txt"
 		Output="."
 		Format="stdout"
 		DEBUGG=
@@ -80,6 +81,14 @@ Examples:
 	More info: http://osxadm.in/?p=64
 	./warranty2.sh -f DSProperties
 
+	Generate a system profile report to open and/or merged with another report.
+	$0 -f spx
+	After generating a warranty SPX file, add it to a full system profiler report with these commands:
+		A) Generate System Profiler Report
+			/usr/sbin/system_profiler -xml > firstreport.spx
+		B) Merge "warranty.spx" file with "firstreport.spx"
+			${PlistBuddy} -c "Merge warranty.spx" firstreport.spx
+
 
 To Do:
 
@@ -88,8 +97,6 @@ To Do:
 	Hardware Image:
 	null({"PROD_IMAGE_URL:https://km.support.apple.com.edgekey.net/kb/securedImage.jsp?configcode=YA8&size=72x72
 
-	Serial is an iPhone
-	IS_IPHONE:N
 	
 Resolved:
 
@@ -97,7 +104,7 @@ Resolved:
 	I'm usure why it does this because the serial usually works if run on a new csv or by itself.
 	
 	S) When running the script in twice, the asd and warranty temp files are overwritten by each process.
-	The fix is to add a unique identifier to the filename. Each process will have it's own files.
+	The fix is to add a unique identifier to the filename. Each loop will have it's own files.
 
 	Number of days since purchase has been added.
 		NUM_DAYS_SINCE_DOP:1557
@@ -113,6 +120,11 @@ Resolved:
 	
 	iPhone Part Description has been added
 		PART_DESCR:IPHONE 4 32GB BLACK
+
+Depreciated (Apple moved the cheese):
+
+	Serial is an iPhone
+	IS_IPHONE:N
 
 -----------------------------------------------------------------------
 
