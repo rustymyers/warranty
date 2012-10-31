@@ -27,6 +27,7 @@
 
 # make sure you use a full path
 WarrantyTempFile="/tmp/warranty.$(date +%s).txt"
+ModelTempFile="/tmp/model.$(date +%s).txt"
 AsdCheck="/tmp/asdcheck.$(date +%s).txt"
 PlistBuddy="/usr/libexec/PlistBuddy"
 Output="."
@@ -35,8 +36,8 @@ PlistOutput="warranty.plist"
 SPXOutput="warranty.spx"
 Format="stdout"
 Version="5.2"
-DEBUGG=1		# Set to 1 to enable debugging ( Don't delete temp files )
-VERBOSE=1	# Set to 1 to enable bulk editing verboseness
+DEBUGG=		# Set to 1 to enable debugging ( Don't delete temp files ), Leave BLANK to disable
+VERBOSE=	# Set to 1 to enable bulk editing verboseness, Leave BLANK to disable
 
 #################
 ##  FUNCTIONS  ##
@@ -139,7 +140,19 @@ SetPlistString()
 
 GetWarrantyValue()
 {
-	grep ^"${1}" ${WarrantyTempFile} | awk -F ':' {'print $2'}
+	grep ^"${1}"  | awk -F ':' {'print $2'}
+}
+GetWarrantyExp()
+{
+	grep HWSupportInfo "${WarrantyTempFile}" |grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $2}'|awk '{print $4,$5,$6}'
+}
+GetWarrantyStatus()
+{
+	grep displayEligibilityInfo "${WarrantyTempFile}" |awk -F, '{print $3}'|cut -d \' -f 2
+}
+GetModelName()
+{
+	cat ${ModelTempFile} |awk -F\> '{print $6}'|cut -d \< -f 1
 }
 GetModelValue()
 {
@@ -221,9 +234,9 @@ outputSTDOUT() {
 	echo "WarrantyStatus      ==  ${WarrantyStatus}"
 	echo "ModelType           ==  ${ModelType}"
 	echo "ASD                 ==  ${AsdVers}"
-	echo "IsAniPhone          ==  ${IsAniPhone}"
-	echo "iPhoneCarrier       ==  ${iPhoneCarrier}"
-	echo "PartDescript        ==  ${PartDescript}"
+	#echo "IsAniPhone          ==  ${IsAniPhone}"
+	#echo "iPhoneCarrier       ==  ${iPhoneCarrier}"
+	#echo "PartDescript        ==  ${PartDescript}"
 }
 
 outputDSProperties() {
@@ -361,16 +374,48 @@ if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 # curl "https://selfsolve.apple.com/wcResults.do?sn=C02FG7QGDH2H&Continue=Continue&num=0"|grep HWSupportInfo|grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $2}'|awk '{print $4,$5,$6}'
 # https://selfsolve.apple.com/agreementWarrantyDynamic.do?sn=QP8500M0ZE6
 
-	WarrantyStatus=$(GetWarrantyValue HW_SUPPORT_COV_SHORT)
-	WarrantyExpires=$(GetWarrantyValue HW_END_DATE) #| /bin/date -jf "%B %d, %Y" "${WarrantyExpires}" +"%Y-%m-%d")
+# Warranty Expiration Date:
+# grep HWSupportInfo /tmp/warranty.1351690782.txt |grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $2}'|awk '{print $4,$5,$6}'
+
+
+	WarrantyStatus=$(GetWarrantyStatus)
+	WarrantyExpires=$(GetWarrantyExp)
 	# If the HW_END_DATE is found, fix the date formate. Otherwise set it to the WarrantyStatus.
 	if [[ -n "$WarrantyExpires" ]]; then
-		WarrantyExpires=$(GetWarrantyValue HW_END_DATE|/bin/date -jf "%B %d, %Y" "${WarrantyExpires}" +"%Y-%m-%d") > /dev/null 2>&1 ## corrects Apple's change to "Month Day, Year" format for HW_END_DATE	
+		WarrantyExpires=$(GetWarrantyExp|/bin/date -jf "%B %d, %Y" "${WarrantyExpires}" +"%Y-%m-%d") > /dev/null 2>&1 ## corrects Apple's change to "Month Day, Year" format for HW_END_DATE	
 	else
 		WarrantyExpires="${WarrantyStatus}"
 	fi
-	ModelType=$(GetModelValue PROD_DESCR)
-	# HW_COVERAGE_DESC
+	
+	# Get Model by using the serial number and this URL:
+	# http://support-sp.apple.com/sp/product?cc=DH2H&lang=en_US
+	# Get model from Apple site? last 4 digits of a 12 digit serial number, last 3 digits of an 11 digit serial number
+	# Get Serial Number Length
+	
+	# Set last 4 or 3 digits to ModelSerial
+	SerialNumberCount=${#SerialNumber}
+	if [[ ${SerialNumberCount} > "11" ]]; then
+		# If Serial is 12 or more charachters, set the ModelSerial to four digits
+		ModelSerial=$(echo $SerialNumber|awk '{ print substr( $0, length($0) - 3, length($0) ) }')
+	else
+		# Set serial to three charachters
+		ModelSerial=$(echo $SerialNumber|awk '{ print substr( $0, length($0) - 2, length($0) ) }')
+	fi
+	if [ "${VERBOSE}" ]; then 
+		echo "Serial Number is $SerialNumberCount long"
+		echo "Using $ModelSerial for Model Name"
+	fi
+	# Set ModelURL based on length of Serial number
+	ModelURL="http://support-sp.apple.com/sp/product?cc=${ModelSerial}&lang=en_US"
+	
+	# Download the Model temp file
+	ModelInfo=$(curl -k -s $ModelURL | awk '{gsub(/\",\"/,"\n");print}' | awk '{gsub(/\":\"/,":");print}' | sed s/\"\}\)// > ${ModelTempFile})
+	if [ "${VERBOSE}" ]; then 
+		echo "Checking Model Info from $ModelURL"
+	fi
+	
+	# Set Model Type from Model temp file
+	ModelType=$(GetModelName)
 	
 	# Remove the "OSB" from the beginning of ModelType
 	if [[ $(echo ${ModelType}|grep 'OBS') ]]; 
@@ -387,13 +432,13 @@ if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 	#DaysRemaining=$(GetWarrantyValue DAYS_REM_IN_COV) ## Apple Removed from warranty site
 	
 	#Is serial an iPhone?
-	IsAniPhone=$(GetWarrantyValue IS_IPHONE)
+	#IsAniPhone=$(GetWarrantyValue IS_IPHONE)
 	
 	#iPhone Carrier?
-	iPhoneCarrier=$(GetWarrantyValue CARRIER)
+	#iPhoneCarrier=$(GetWarrantyValue CARRIER)
 	
 	#iPhone Part Description
-	PartDescript=$(GetWarrantyValue PART_DESCR)
+	#PartDescript=$(GetWarrantyValue PART_DESCR)
 	
 	# Hardware Support Link
 	#HWSupport=$(GetWarrantyValue HW_SUPPORT_LINK)
@@ -407,6 +452,11 @@ if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 		if [ "${VERBOSE}" ]; then 
 			echo "Removing Temp Warranty File"
 		fi
+		rm "${ModelTempFile}"
+		if [ "${VERBOSE}" ]; then 
+			echo "Removing Temp Model File"
+		fi
+
 	fi
 fi
 
