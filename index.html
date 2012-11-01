@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Warranty : Script to check warranty status of Macs" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Warranty</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/rustymyers/warranty">View on GitHub</a>
+
+          <h1 id="project_title">Warranty</h1>
+          <h2 id="project_tagline">Script to check warranty status of Macs</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/rustymyers/warranty/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/rustymyers/warranty/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h3>warranty2.sh</h3>
+
+<p>Description: </p>
+
+<pre><code>Looks up Apple warranty info based on serial number. Uses Apple's https://selfsolve.apple.com/wcResults.do
+
+Based on a script by Scott Russell, IT Support Engineer, 
+University of Notre Dame
+http://www.nd.edu/~srussel2/macintosh/bash/warranty.txt
+
+Edited to add the ASD Versions by Joseph Chilcote
+
+Re-written by Rusty Myers for csv processing, plist and csv output.
+
+DSProperties output and HW_END_DATE error fix by Nate Walck.
+Edited 11/03/2011
+
+Adding iOS Device support and specific fields. Adding logic to only show appropriate fields should be done, later...
+</code></pre>
+
+<p>Known Issue:</p>
+
+<pre><code>Apple recently updated the URL, reworking the code to accomodate... 
+</code></pre>
+
+<p>Usage:</p>
+
+<pre><code>Input:
+
+    no flags = use this computers serial
+    -b = loop through BULK csv file
+        * Your BULK file should list each serial on a 
+        new line and not have any commas.
+        * Processing a csv file will only output to a 
+        csv file. other output formats will be ignored
+
+    -s = specify SERIAL number
+
+    -h = print help
+
+Output:
+
+    -f [csv|plist|DSProperties|spx] = FORMAT output file to csv, plist, spx, or DeployStudio format.
+
+    -o [/path/to/] = OUTPUT. Don't not include filename. Default is same directory as script.   
+
+    -n [warranty.plist|.csv] = Speficiy output file NAME. Ensure you use the appropriate extension for your output.
+
+    -v = Enable sexy verboseness
+
+    -k = Enable debugging (Don't delete temp files)
+
+Defaults:
+
+    WarrantyTempFile="/tmp/warranty.DATE.txt"
+    ModelTempFile="/tmp/model.DATE.txt"
+    AsdCheck="/tmp/asdcheck.DATE.txt"
+    Output="."
+    Format="stdout"
+    DEBUGG=
+    VERBOSE=    
+</code></pre>
+
+<p>Examples:</p>
+
+<pre><code>Default Use - Uses machine serial, prints to screen
+./warranty2.sh
+
+Specify serial, prints to screen
+./warranty2.sh -s 4H632JhQXZ
+
+Specify output format to Plist and save in specified output
+./warranty2.sh -f plist -o /Library/Admin/
+
+Specify output format to Plist and save in specified output and a custom name
+./warranty2.sh -f plist -o ~/Desktop/ -n myserials.plist
+
+Process list of serials and output to custom location and custom name
+./warranty2.sh -b serials.csv -o ~/Desktop/ -n myserials.csv
+
+Print the output during DeployStudio workflow to enter into custom properties.
+More info: http://osxadm.in/?p=64
+./warranty2.sh -f DSProperties
+
+Generate a system profile report to open and/or merged with another report.
+$0 -f spx
+After generating a warranty SPX file, add it to a full system profiler report with these commands:
+    A) Generate System Profiler Report
+        /usr/sbin/system_profiler -xml &gt; firstreport.spx
+    B) Merge "warranty.spx" file with "firstreport.spx"
+        ${PlistBuddy} -c "Merge warranty.spx" firstreport.spx
+</code></pre>
+
+<p>To Do:</p>
+
+<pre><code>Pull in the following...
+
+Hardware Image:
+null({"PROD_IMAGE_URL:https://km.support.apple.com.edgekey.net/kb/securedImage.jsp?configcode=YA8&amp;size=72x72
+</code></pre>
+
+<p>Resolved:</p>
+
+<pre><code>P) Sometimes when processing bulk files, the script spits out one of the serial numbers as unkown and then prints tons of ASD numbers. 
+I'm usure why it does this because the serial usually works if run on a new csv or by itself.
+
+S) When running the script in twice, the asd and warranty temp files are overwritten by each process.
+The fix is to add a unique identifier to the filename. Each loop will have it's own files.
+
+Number of days since purchase has been added.
+    NUM_DAYS_SINCE_DOP:1557
+
+Number of days remaining in coverage has been added.
+    DAYS_REM_IN_COV:180
+
+Is serial an iPhone has been added
+    IS_IPHONE:Y or N
+
+iPhone Carrier has been added (not showing anything yet?)
+    CARRIER:
+
+iPhone Part Description has been added
+    PART_DESCR:IPHONE 4 32GB BLACK
+</code></pre>
+
+<p>Depreciated (Apple moved the cheese):</p>
+
+<pre><code>Serial is an iPhone
+IS_IPHONE:N
+</code></pre>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Warranty maintained by <a href="https://github.com/rustymyers">rustymyers</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
