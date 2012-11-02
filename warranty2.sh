@@ -144,22 +144,33 @@ GetWarrantyValue()
 }
 GetWarrantyExp()
 {
+	# Test to see if it's AppleCare Protection Plan	
 	if [[ `grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "AppleCare Protection Plan"` ]]; then
 		# AppleCare Protection Plan uses print $2
 		grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $2}'|awk '{print $4,$5,$6}'
+	# Test to see if it's AppleCare Repair Agreement
 	elif [[ `grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "AppleCare Repair Agreement"` ]]; then
 		# AppleCare Repair Agreement uses print $3
-		grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $3}'|awk '{print $4,$5,$6}'	
+		grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $3}'|awk '{print $4,$5,$6}'		
+	# Test to see if it's AppleCare+
+	elif [[ `grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "AppleCare+"` ]]; then
+		grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $2}'|awk '{print $4,$5,$6}'	
 	fi
 	
 }
 GetWarrantyStatus()
 {
-	WarrStatus=$(grep displayEligibilityInfo "${WarrantyTempFile}" |awk -F, '{print $3}'|cut -d \' -f 2)
-	if [[ -z ${WarrStatus} ]]; then
-		echo "Out Of Warranty"
+	WarrStatus=$(grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "AppleCare")
+	if [[ $WarrStatus =~ "Active" ]]; then
+		if [[ $WarrStatus =~ "Repair Agreement" ]]; then
+			echo "AppleCare Protection Plan"
+		elif [[ $WarrStatus =~ "Protection Plan" ]]; then
+			echo "AppleCare Repair Agreement"
+		elif [[ $WarrStatus =~ "AppleCare+"  ]]; then
+			echo "AppleCare+"
+		fi		
 	else
-		echo ${WarrStatus}
+		echo "Out Of Coverage"
 	fi
 }
 GetModelName()
