@@ -155,12 +155,14 @@ GetWarrantyExp()
 	# Test to see if it's AppleCare+
 	elif [[ `grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "AppleCare+"` ]]; then
 		grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $2}'|awk '{print $4,$5,$6}'	
+	elif [[ `grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "Apple&#039;s Limited Warranty"` ]]; then
+		grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $2}'|awk '{print $4,$5,$6}'
 	fi
 	
 }
 GetWarrantyStatus()
 {
-	WarrStatus=$(grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "AppleCare")
+	WarrStatus=$(grep displayHWSupportInfo "${WarrantyTempFile}" )
 	if [[ $WarrStatus =~ "Active" ]]; then
 		if [[ $WarrStatus =~ "Repair Agreement" ]]; then
 			echo "AppleCare Protection Plan"
@@ -168,6 +170,8 @@ GetWarrantyStatus()
 			echo "AppleCare Repair Agreement"
 		elif [[ $WarrStatus =~ "AppleCare+"  ]]; then
 			echo "AppleCare+"
+		elif [[ $WarrStatus =~ "Limited Warranty" ]]; then
+			echo "Apple's Limited Warranty"
 		fi		
 	else
 		echo "Out Of Coverage"
