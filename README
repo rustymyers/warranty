@@ -4,7 +4,7 @@ File:
 
 Description: 
 
-	Looks up Apple warranty info based on serial number. Uses Apple's http://selfsolve.apple.com/warrantyChecker
+	Looks up Apple warranty info based on serial number. Uses Apple's https://selfsolve.apple.com/wcResults.do
 
 	Based on a script by Scott Russell, IT Support Engineer, 
 	University of Notre Dame

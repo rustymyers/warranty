@@ -144,7 +144,14 @@ GetWarrantyValue()
 }
 GetWarrantyExp()
 {
-	grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $2}'|awk '{print $4,$5,$6}'
+	if [[ `grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "AppleCare Protection Plan"` ]]; then
+		# AppleCare Protection Plan uses print $2
+		grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $2}'|awk '{print $4,$5,$6}'
+	elif [[ `grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "AppleCare Repair Agreement"` ]]; then
+		# AppleCare Repair Agreement uses print $3
+		grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $3}'|awk '{print $4,$5,$6}'	
+	fi
+	
 }
 GetWarrantyStatus()
 {
