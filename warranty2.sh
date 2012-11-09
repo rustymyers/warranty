@@ -37,7 +37,7 @@ CSVOutput="warranty.csv"
 PlistOutput="warranty.plist"
 SPXOutput="warranty.spx"
 Format="stdout"
-Version="6"
+Version="6.1"
 DEBUGG=		# Set to 1 to enable debugging ( Don't delete temp files ), Leave BLANK to disable
 VERBOSE=	# Set to 1 to enable bulk editing verboseness, Leave BLANK to disable
 
@@ -155,6 +155,7 @@ GetWarrantyExp()
 	# Test to see if it's AppleCare+
 	elif [[ `grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "AppleCare+"` ]]; then
 		grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $2}'|awk '{print $4,$5,$6}'	
+	# Test to see if it's Limited Warranty 
 	elif [[ `grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "Apple&#039;s Limited Warranty"` ]]; then
 		grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $2}'|awk '{print $4,$5,$6}'
 	fi
@@ -162,7 +163,7 @@ GetWarrantyExp()
 }
 GetWarrantyStatus()
 {
-	WarrStatus=$(grep displayHWSupportInfo "${WarrantyTempFile}" )
+	WarrStatus=$(grep displayHWSupportInfo "${WarrantyTempFile}")
 	if [[ $WarrStatus =~ "Active" ]]; then
 		if [[ $WarrStatus =~ "Repair Agreement" ]]; then
 			echo "AppleCare Protection Plan"
