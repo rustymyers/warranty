@@ -39,7 +39,7 @@ CSVOutput="warranty.csv"
 PlistOutput="PSUWarranty.plist"
 SPXOutput="warranty.spx"
 Format="plist"
-Version="6"
+Version="6.1"
 DEBUGG=		# Set to 1 to enable debugging ( Don't delete temp files ), Leave BLANK to disable
 VERBOSE=	# Set to 1 to enable bulk editing verboseness, Leave BLANK to disable
 
