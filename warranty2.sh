@@ -23,6 +23,8 @@
 ## http://support-sp.apple.com/sp/product?cc=DH2H&lang=en_US
 # Edited 2012/10/31
 # Updating script to work with new URL
+# Edited 2012/11/12
+# Added code to use proper date flags for ubuntu systems by roljui (see github issue #4)
 
 
 ###############
@@ -39,7 +41,7 @@ CSVOutput="warranty.csv"
 PlistOutput="PSUWarranty.plist"
 SPXOutput="warranty.spx"
 Format="plist"
-Version="6.1"
+Version="6.2"
 DEBUGG=		# Set to 1 to enable debugging ( Don't delete temp files ), Leave BLANK to disable
 VERBOSE=	# Set to 1 to enable bulk editing verboseness, Leave BLANK to disable
 
@@ -147,15 +149,38 @@ GetWarrantyValue()
 }
 GetWarrantyExp()
 {
-	grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $2}'|awk '{print $4,$5,$6}'
+	# Test to see if it's AppleCare Protection Plan	
+	if [[ `grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "AppleCare Protection Plan"` ]]; then
+		# AppleCare Protection Plan uses print $2
+		grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $2}'|awk '{print $4,$5,$6}'
+	# Test to see if it's AppleCare Repair Agreement
+	elif [[ `grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "AppleCare Repair Agreement"` ]]; then
+		# AppleCare Repair Agreement uses print $3
+		grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $3}'|awk '{print $4,$5,$6}'		
+	# Test to see if it's AppleCare+
+	elif [[ `grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "AppleCare+"` ]]; then
+		grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $2}'|awk '{print $4,$5,$6}'	
+	# Test to see if it's Limited Warranty 
+	elif [[ `grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "Apple&#039;s Limited Warranty"` ]]; then
+		grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $2}'|awk '{print $4,$5,$6}'
+	fi
+
 }
 GetWarrantyStatus()
 {
-	WarrStatus=$(grep displayEligibilityInfo "${WarrantyTempFile}" |awk -F, '{print $3}'|cut -d \' -f 2)
-	if [[ -z ${WarrStatus} ]]; then
-		echo "Out Of Warranty"
+	WarrStatus=$(grep displayHWSupportInfo "${WarrantyTempFile}")
+	if [[ $WarrStatus =~ "Active" ]]; then
+		if [[ $WarrStatus =~ "Repair Agreement" ]]; then
+			echo "AppleCare Protection Plan"
+		elif [[ $WarrStatus =~ "Protection Plan" ]]; then
+			echo "AppleCare Repair Agreement"
+		elif [[ $WarrStatus =~ "AppleCare+"  ]]; then
+			echo "AppleCare+"
+		elif [[ $WarrStatus =~ "Limited Warranty" ]]; then
+			echo "Apple's Limited Warranty"
+		fi		
 	else
-		echo ${WarrStatus}
+		echo "Out Of Coverage"
 	fi
 }
 GetModelName()
@@ -381,7 +406,14 @@ if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 	WarrantyExpires=$(GetWarrantyExp)
 	# If the HW_END_DATE is found, fix the date formate. Otherwise set it to the WarrantyStatus.
 	if [[ -n "$WarrantyExpires" ]]; then
-		WarrantyExpires=$(GetWarrantyExp|/bin/date -jf "%B %d, %Y" "${WarrantyExpires}" +"%Y-%m-%d") > /dev/null 2>&1 ## corrects Apple's change to "Month Day, Year" format for HW_END_DATE	
+		# Changing WarrantyExpires date based on OS. Added by roljui (see GitHub Issue #4)
+		OSVersion=$(uname -a)
+		if $( echo $OSVersion | grep --quiet 'Ubuntu' ); then
+			WarrantyExpires=$(GetWarrantyExp|/bin/date -d "${WarrantyExpires}" +"%Y-%m-%d") > /dev/null 2>&1 ## corrects Apple's change to "Month Day, Year" format for HW_END_DATE (Ubuntu Compliant)
+		else
+			WarrantyExpires=$(GetWarrantyExp|/bin/date -jf "%B %d, %Y" "${WarrantyExpires}" +"%Y-%m-%d") > /dev/null 2>&1 ## corrects Apple's change to "Month Day, Year" format for HW_END_DATE
+		fi
+		#WarrantyExpires=$(GetWarrantyExp|/bin/date -jf "%B %d, %Y" "${WarrantyExpires}" +"%Y-%m-%d") > /dev/null 2>&1 ## corrects Apple's change to "Month Day, Year" format for HW_END_DATE	
 	else
 		WarrantyExpires="${WarrantyStatus}"
 	fi
