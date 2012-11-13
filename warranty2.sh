@@ -540,6 +540,10 @@ while getopts s:b:o:f:n:dvkh opt; do
 done
 shift $(expr $OPTIND - 1)
 
+# Make output dir if specified
+if [ "${Output}" ]; then
+	mkdir -p "${Output}"
+fi
 
 ## Add Timeout so this curl doesn't try forever when GitHub raw is down. Cache a local copy? Try alternate forks?
 ## Fail to unknown ASD after 5 seconds? Don't take too long, you'll get the numbers eventually. 
