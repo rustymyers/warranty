@@ -22,6 +22,8 @@
 ## http://support-sp.apple.com/sp/product?cc=DH2H&lang=en_US
 # Edited 2012/10/31
 # Updating script to work with new URL
+# Edited 2012/11/12
+# Added code to use proper date flags for ubuntu systems by roljui (see github issue #4)
 
 ###############
 ##  GLOBALS  ##
@@ -398,7 +400,14 @@ if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 	WarrantyExpires=$(GetWarrantyExp)
 	# If the HW_END_DATE is found, fix the date formate. Otherwise set it to the WarrantyStatus.
 	if [[ -n "$WarrantyExpires" ]]; then
-		WarrantyExpires=$(GetWarrantyExp|/bin/date -jf "%B %d, %Y" "${WarrantyExpires}" +"%Y-%m-%d") > /dev/null 2>&1 ## corrects Apple's change to "Month Day, Year" format for HW_END_DATE	
+		# Changing WarrantyExpires date based on OS. Added by roljui (see GitHub Issue #4)
+		OSVersion=$(uname -a)
+		if $( echo $OSVersion | grep --quiet 'Ubuntu' ); then
+			WarrantyExpires=$(GetWarrantyExp|/bin/date -d "${WarrantyExpires}" +"%Y-%m-%d") > /dev/null 2>&1 ## corrects Apple's change to "Month Day, Year" format for HW_END_DATE (Ubuntu Compliant)
+		else
+			WarrantyExpires=$(GetWarrantyExp|/bin/date -jf "%B %d, %Y" "${WarrantyExpires}" +"%Y-%m-%d") > /dev/null 2>&1 ## corrects Apple's change to "Month Day, Year" format for HW_END_DATE
+		fi
+		#WarrantyExpires=$(GetWarrantyExp|/bin/date -jf "%B %d, %Y" "${WarrantyExpires}" +"%Y-%m-%d") > /dev/null 2>&1 ## corrects Apple's change to "Month Day, Year" format for HW_END_DATE	
 	else
 		WarrantyExpires="${WarrantyStatus}"
 	fi
