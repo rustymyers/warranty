@@ -177,7 +177,7 @@ GetWarrantyStatus()
 		elif [[ $WarrStatus =~ "AppleCare+"  ]]; then
 			echo "AppleCare+"
 		elif [[ $WarrStatus =~ "Limited Warranty" ]]; then
-			echo "Apple's Limited Warranty"
+			echo "Apples Limited Warranty"
 		fi		
 	else
 		echo "Out Of Coverage"
@@ -240,6 +240,11 @@ outputPlist() {
 	if [ "${VERBOSE}" ]; then 
 		echo "All fields added"
 	fi
+	chmod 755 "${PlistLocal}"
+	if [ "${VERBOSE}" ]; then 
+		echo "Updated permissions to 755 on ${PlistLocal}"
+	fi
+
 }
 
 outputCSV() {
