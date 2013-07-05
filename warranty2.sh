@@ -148,11 +148,9 @@ GetWarrantyExp()
 {
 	# Test to see if it's AppleCare Protection Plan	
 	if [[ `grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "AppleCare Protection Plan"` ]]; then
-		# AppleCare Protection Plan uses print $2
 		grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $2}'|awk '{print $4,$5,$6}'
 	# Test to see if it's AppleCare Repair Agreement
 	elif [[ `grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "AppleCare Repair Agreement"` ]]; then
-		# AppleCare Repair Agreement uses print $3
 		grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $3}'|awk '{print $4,$5,$6}'		
 	# Test to see if it's AppleCare+
 	elif [[ `grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "AppleCare+"` ]]; then
@@ -160,7 +158,11 @@ GetWarrantyExp()
 	# Test to see if it's Limited Warranty 
 	elif [[ `grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "Apple&#039;s Limited Warranty"` ]]; then
 		grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $2}'|awk '{print $4,$5,$6}'
+	# Test to see if it's a custom agreement
+	elif [[ `grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "custom agreement"` ]]; then
+		grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $3}'|awk '{print $4,$5,$6}'
 	fi
+
 	
 }
 GetWarrantyStatus()
@@ -175,6 +177,8 @@ GetWarrantyStatus()
 			echo "AppleCare+"
 		elif [[ $WarrStatus =~ "Limited Warranty" ]]; then
 			echo "Apple's Limited Warranty"
+		elif [[ $WarrStatus =~ "custom agreement" ]]; then
+			echo "Apple Custom Agreement"
 		fi		
 	else
 		echo "Out Of Coverage"
@@ -398,8 +402,17 @@ if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 
 	WarrantyStatus=$(GetWarrantyStatus)
 	WarrantyExpires=$(GetWarrantyExp)
+	if [ "${VERBOSE}" ]; then 
+		echo "Get Warranty Status"
+		echo "WarrantyStatus: $WarrantyStatus"
+		echo "WarrantyExpires: $WarrantyExpires"
+	fi
+	
 	# If the HW_END_DATE is found, fix the date formate. Otherwise set it to the WarrantyStatus.
 	if [[ -n "$WarrantyExpires" ]]; then
+		if [ "${VERBOSE}" ]; then 
+			echo "Changing WarrantyExpires Date Format"
+		fi
 		# Changing WarrantyExpires date based on OS. Added by roljui (see GitHub Issue #4)
 		OSVersion=$(uname -a)
 		if $( echo $OSVersion | grep --quiet 'Ubuntu' ); then
