@@ -4,7 +4,7 @@
 # 2013-11-12
 
 # Check Seagate repair program
-
+# Credit to brunerd for curl: http://www.brunerd.com/blog/2012/10/16/check-multiple-imacs-for-1tb-seagate-repair-program/
 #curl  "https://supportform.apple.com/201107/SerialNumberEligibilityAction.do?cb=iMacHDCheck.response&sn=$(ioreg -c "IOPlatformExpertDevice" | awk -F '"' '/IOPlatformSerialNumber/ {print $4}')" 2>/dev/null
 
 VERBOSE=   #Set to 1 to see verbose
