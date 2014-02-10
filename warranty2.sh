@@ -2,7 +2,6 @@
 # warranty.sh
 # Description: looks up Apple warranty info for 
 # this computer, or one specified by serial number 
-
 # Based on a script by Scott Russell, IT Support Engineer, 
 # University of Notre Dame
 # http://www.nd.edu/~srussel2/macintosh/bash/warranty.txt
@@ -24,6 +23,8 @@
 # Updating script to work with new URL
 # Edited 2012/11/12
 # Added code to use proper date flags for ubuntu systems by roljui (see github issue #4)
+# Edited 2013/10/03
+# Adding support for Custom Apple Agreements
 
 ###############
 ##  GLOBALS  ##
@@ -163,7 +164,6 @@ GetWarrantyExp()
 		grep displayHWSupportInfo "${WarrantyTempFile}" |grep -i "Estimated Expiration Date:"| awk -F'<br/>' '{print $3}'|awk '{print $4,$5,$6}'
 	fi
 
-	
 }
 GetWarrantyStatus()
 {
@@ -393,7 +393,6 @@ if [[ -z "${SerialNumber}" ]]; then
 	fi
 fi
 
-
 if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 
 	if [ "${VERBOSE}" ]; then 
@@ -415,10 +414,10 @@ if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 		fi
 		# Changing WarrantyExpires date based on OS. Added by roljui (see GitHub Issue #4)
 		OSVersion=$(uname -a)
-		if $( echo $OSVersion | grep --quiet 'Ubuntu' ); then
-			WarrantyExpires=$(GetWarrantyExp|/bin/date -d "${WarrantyExpires}" +"%Y-%m-%d") > /dev/null 2>&1 ## corrects Apple's change to "Month Day, Year" format for HW_END_DATE (Ubuntu Compliant)
-		else
+		if $( echo $OSVersion | grep --quiet 'Darwin' ); then
 			WarrantyExpires=$(GetWarrantyExp|/bin/date -jf "%B %d, %Y" "${WarrantyExpires}" +"%Y-%m-%d") > /dev/null 2>&1 ## corrects Apple's change to "Month Day, Year" format for HW_END_DATE
+		else
+			WarrantyExpires=$(GetWarrantyExp|/bin/date -d "${WarrantyExpires}" +"%Y-%m-%d") > /dev/null 2>&1 ## corrects Apple's change to "Month Day, Year" format for HW_END_DATE (Linux Compliant)
 		fi
 		#WarrantyExpires=$(GetWarrantyExp|/bin/date -jf "%B %d, %Y" "${WarrantyExpires}" +"%Y-%m-%d") > /dev/null 2>&1 ## corrects Apple's change to "Month Day, Year" format for HW_END_DATE	
 	else
