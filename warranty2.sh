@@ -506,7 +506,7 @@ case $Format in
 	if [ "${VERBOSE}" ]; then 
 	echo "Adding CSV Headers."
 	fi
-	echo "SerialNumber, PurchaseDate, DaysSinceDOP, WarrantyExpires, DaysRemaining, WarrantyStatus, ModelName, AsdVers, IsAniPhone, iPhoneCarrier, PartDescript" >> "${Output}/${CSVOutput}"
+	echo "SerialNumber, PurchaseDate, WarrantyStatus, ModelName, AsdVers, IsAniPhone, iPhoneCarrier, PartDescript" >> "${Output}/${CSVOutput}"
 	outputCSV
 	;;
 	plist)
