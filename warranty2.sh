@@ -562,7 +562,7 @@ fi
 if [ "${VERBOSE}" ]; then 
 	echo "Downloading ASD file."
 fi
-curl -k -s https://raw.githubusercontent.com/elliotatlinde/warranty/master/asdcheck -o ${AsdCheck} #> /dev/null 2>&1
+curl -k -s https://raw.githubusercontent.com/homebysix/warranty/master/asdcheck -o ${AsdCheck} #> /dev/null 2>&1
 
 # No command line variables. Use internal serial and run checks
 if [[ -z "$SerialNumber" ]]; then
