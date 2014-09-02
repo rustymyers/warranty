@@ -375,7 +375,7 @@ if [ "${VERBOSE}" ]; then
 	echo "Checking Serial: ${SerialNumber} Warranty Status from URL ${WarrantyURL}"
 fi
 
-[[ -n "${SerialNumber}" ]] && WarrantyInfo=$(curl -k -s $WarrantyURL | awk '{gsub(/\",\"/,"\n");print}' | awk '{gsub(/\":\"/,":");print}' | sed s/\"\}\)// > ${WarrantyTempFile})
+[[ -n "${SerialNumber}" ]] && WarrantyInfo=$(curl -Lks $WarrantyURL | awk '{gsub(/\",\"/,"\n");print}' | awk '{gsub(/\":\"/,":");print}' | sed s/\"\}\)// > ${WarrantyTempFile})
 
 InvalidSerial=$(grep 'invalidserialnumber\|productdoesnotexist' "${WarrantyTempFile}")
 
@@ -446,7 +446,7 @@ if [[ -e "${WarrantyTempFile}" && -z "${InvalidSerial}" ]] ; then
 	ModelURL="http://support-sp.apple.com/sp/product?cc=${ModelSerial}&lang=en_US"
 	
 	# Download the Model temp file
-	ModelInfo=$(curl -k -s $ModelURL | awk '{gsub(/\",\"/,"\n");print}' | awk '{gsub(/\":\"/,":");print}' | sed s/\"\}\)// > ${ModelTempFile})
+	ModelInfo=$(curl -Lks $ModelURL | awk '{gsub(/\",\"/,"\n");print}' | awk '{gsub(/\":\"/,":");print}' | sed s/\"\}\)// > ${ModelTempFile})
 	if [ "${VERBOSE}" ]; then 
 		echo "Checking Model Info from $ModelURL"
 	fi
@@ -562,7 +562,7 @@ fi
 if [ "${VERBOSE}" ]; then 
 	echo "Downloading ASD file."
 fi
-curl -k -s https://raw.github.com/rustymyers/warranty/master/asdcheck -o ${AsdCheck} #> /dev/null 2>&1
+curl -Lks https://raw.github.com/rustymyers/warranty/master/asdcheck -o ${AsdCheck} #> /dev/null 2>&1
 
 # No command line variables. Use internal serial and run checks
 if [[ -z "$SerialNumber" ]]; then
