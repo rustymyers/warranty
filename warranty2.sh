@@ -226,6 +226,7 @@ outputPlist() {
 	fi
 	
 	SetPlistString serialnumber "${SerialNumber}" "${PlistLocal}"
+	SetPlistString displaysserialnumber "${DisplaySerialNumbers}" "${PlistLocal}"
 # 	SetPlistString purchasedate "${PurchaseDate}" "${PlistLocal}" ## Apple Removed from warranty site
 	SetPlistString warrantyexpires "${WarrantyExpires}" "${PlistLocal}"
 	SetPlistString warrantystatus "${WarrantyStatus}" "${PlistLocal}"
@@ -253,7 +254,7 @@ outputCSV() {
 	# "SerialNumber, WarrantyExpires, WarrantyStatus, FixModel, AsdVers, IsAniPhone, iPhoneCarrier, PartDescript" 
 	FixModel=$(echo ${ModelType} |tr -d ',')
 #	echo "${SerialNumber}, ${PurchaseDate}, ${DaysSinceDOP}, ${WarrantyExpires}, ${DaysRemaining}, ${WarrantyStatus}, ${FixModel}, ${AsdVers}, ${IsAniPhone}, ${iPhoneCarrier}, ${PartDescript}" >> "${Output}/${CSVOutput}" ## Apple Removed fields from warranty site
-	echo "${SerialNumber}, ${WarrantyExpires}, ${WarrantyStatus}, ${FixModel}, ${AsdVers}, ${IsAniPhone}, ${iPhoneCarrier}, ${PartDescript}" >> "${Output}/${CSVOutput}"
+	echo "${SerialNumber}, ${WarrantyExpires}, ${WarrantyStatus}, ${FixModel}, ${AsdVers}, ${IsAniPhone}, ${iPhoneCarrier}, ${PartDescript}, ${DisplaySerialNumbers}" >> "${Output}/${CSVOutput}"
 	
 }
 
@@ -261,6 +262,11 @@ outputSTDOUT() {
 	# Write data to STDOUT
 	echo "$(date) ... Checking warranty status"
 	echo "Serial Number       ==  ${SerialNumber}"
+  if [[ -n "$DisplaySerialNumbers" ]]
+  then
+    # Expand var outside of double quotes to change multi-line output to single.
+    echo "Display(s) serial   ==  "${DisplaySerialNumbers}
+  fi
 	# echo "PurchaseDate        ==  ${PurchaseDate}"
 	# echo "Days Since Purchase ==  ${DaysSinceDOP}"
 	echo "WarrantyExpires     ==  ${WarrantyExpires}"
@@ -319,6 +325,7 @@ EOF
 	${PlistBuddy} -c "Add 0:_items:0:_name string Warranty" ${SPXOutput}
 	${PlistBuddy} -c "Add 0:_items:0:Model string ${ModelType}" ${SPXOutput}
 	${PlistBuddy} -c "Add 0:_items:0:Serial\ Number string ${SerialNumber}" ${SPXOutput}
+	${PlistBuddy} -c "Add 0:_items:0:Display\ Serial\ Number string ${DisplaySerialNumbers}" ${SPXOutput}
 # 	${PlistBuddy} -c "Add 0:_items:0:Purchase\ Date string ${PurchaseDate}" ${SPXOutput} ## Apple Removed from warranty site
 	${PlistBuddy} -c "Add 0:_items:0:Warranty\ Expires string ${WarrantyExpires}" ${SPXOutput}
 	${PlistBuddy} -c "Add 0:_items:0:Warranty\ Status string ${WarrantyStatus}" ${SPXOutput}
@@ -350,7 +357,7 @@ fi
 if [ "${VERBOSE}" ]; then 
 	echo "Adding CSV headers."
 fi
-echo "SerialNumber, WarrantyExpires, WarrantyStatus, ModelName, AsdVers, IsAniPhone, iPhoneCarrier, PartDescript" >> "${Output}/${CSVOutput}"
+echo "SerialNumber, WarrantyExpires, WarrantyStatus, ModelName, AsdVers, IsAniPhone, iPhoneCarrier, PartDescript, Display Serial Numbers" >> "${Output}/${CSVOutput}"
 # echo "SerialNumber, PurchaseDate, DaysSinceDOP, WarrantyExpires, DaysRemaining, WarrantyStatus, FixModel, AsdVers, IsAniPhone, iPhoneCarrier, PartDescript" >> "${Output}/${CSVOutput}" ## Apple Removed from warranty site
 
 for i in $(cat "${1}"); do
@@ -571,6 +578,9 @@ if [[ -z "$SerialNumber" ]]; then
 	fi
 	SerialNumber=$(system_profiler SPHardwareDataType | grep "Serial Number" | grep -v "tray" |  awk -F ': ' {'print $2'} 2>/dev/null)
 fi
+
+# Get the display serial number (if attached)
+DisplaySerialNumbers="$(system_profiler SPDisplaysDataType | awk -F ': ' '/Display Serial/ {print $2}')"
 
 if [ "${OutputName}" ]; then
 	if [ "${VERBOSE}" ]; then 
