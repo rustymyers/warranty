@@ -360,6 +360,19 @@ fi
 echo "SerialNumber, WarrantyExpires, WarrantyStatus, ModelName, AsdVers, IsAniPhone, iPhoneCarrier, PartDescript, Display Serial Numbers" >> "${Output}/${CSVOutput}"
 # echo "SerialNumber, PurchaseDate, DaysSinceDOP, WarrantyExpires, DaysRemaining, WarrantyStatus, FixModel, AsdVers, IsAniPhone, iPhoneCarrier, PartDescript" >> "${Output}/${CSVOutput}" ## Apple Removed from warranty site
 
+# test csv for line endings
+crlfEnd=$(file "${1}" | grep -i "CRLF")
+if [[ -z "$crlfEnd" ]]; then
+	if [ "${VERBOSE}" ]; then 
+		echo "No CRLF line endings ${i}"
+	fi
+else
+	if [ "${VERBOSE}" ]; then 
+		echo "CRLF line endings, fixing ${1} first..."
+	fi
+	perl -pi -e 's/\r\n|\n|\r/\n/g' "${1}"
+fi
+
 for i in $(cat "${1}"); do
 
 if [ "${VERBOSE}" ]; then 
